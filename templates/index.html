@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block content %}
+Hello, {{ user.username|default:'Guest' }}!
+
+<div class="test" style="width: 30%; margin: 0px auto;">
+    {% if user.is_authenticated %}
+        <div class="hexagon-menu clear" style="width: 50%; margin: 0px auto;" >
+            <div class="hexagon-item">
+                <div class="hex-item">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div class="hex-item">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <a  href="{% url 'logout' %}" class="hex-content">
+                    <span class="hex-content-inner">
+                        <span class="icon">
+                            <i class="fa fa-universal-access"></i>
+                        </span>
+                        <span class="title">Logout</span>
+                    </span>
+                    <svg viewBox="0 0 173.20508075688772 200" height="200" width="174" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M86.60254037844386 0L173.20508075688772 50L173.20508075688772 150L86.60254037844386 200L0 150L0 50Z" fill="#1e2530"></path></svg>
+                </a>
+            </div>
+    {% else %}
+    <div class="hexagon-menu clear" >
+        <div class="hexagon-item">
+            <div class="hex-item">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <div class="hex-item">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <a  href="{% url 'login' %}" class="hex-content">
+                <span class="hex-content-inner">
+                    <span class="icon">
+                        <i class="fa fa-universal-access"></i>
+                    </span>
+                    <span class="title">Login</span>
+                </span>
+                <svg viewBox="0 0 173.20508075688772 200" height="200" width="174" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M86.60254037844386 0L173.20508075688772 50L173.20508075688772 150L86.60254037844386 200L0 150L0 50Z" fill="#1e2530"></path></svg>
+            </a>
+        </div>
+            <div class="hexagon-item">
+                <div class="hex-item">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div class="hex-item">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <a  href="{% url 'register'%}" class="hex-content">
+                    <span class="hex-content-inner">
+                        <span class="icon">
+                            <i class="fa fa-universal-access"></i>
+                        </span>
+                        <span class="title">Register</span>
+                    </span>
+                    <svg viewBox="0 0 173.20508075688772 200" height="200" width="174" version="1.1" xmlns="http://www.w3.org/2000/svg"><path d="M86.60254037844386 0L173.20508075688772 50L173.20508075688772 150L86.60254037844386 200L0 150L0 50Z" fill="#1e2530"></path></svg>
+                </a>
+        {% comment %} <a href="{% url 'login' %}">Login</a> {% endcomment %}
+        {% comment %} <a href="{% url 'register'%}">Register</a> {% endcomment %}
+    {% endif %}
+</div>
+{% endblock %}

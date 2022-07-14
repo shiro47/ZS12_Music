@@ -1,0 +1,31 @@
+<!-- templates/registration/login.html -->
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="login">
+  <h1>Login</h1>
+    <form method="post">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username" required="required" />
+        <input type="password" name="password" placeholder="Password" required="required" />
+        <button type="submit" class="btn btn-primary btn-block btn-large">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          Let me in.
+        </button>
+    </form>
+</div>
+
+{% comment %} <p1>gfgd</p1>
+<h2>Log In</h2>
+<h3>add</h3>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Log In</button> {% endcomment %}
+</form>
+{% endblock %}
