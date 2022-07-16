@@ -3,15 +3,35 @@
 <html>
 <head>
   <meta charset="utf-8">
-  {% block select_css %}<link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}"/>{% endblock %}
-  <link rel="stylesheet" href="{% static 'font-awesome-4.7.0/css/font-awesome.css' %}"/>
-
+  <meta name="viewport" content="width=device-width"/>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
   <title>{% block title %}Django Auth Tutorial{% endblock %}</title>
+  
 </head>
 <body>
   <main>
     {% block content %}
     {% endblock %}
   </main>
+  {% comment %} <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="https://cdn.rawgit.com/labnol/files/master/yt.js"></script> {% endcomment %}
+  <script>
+    var clickCount = 0;
+    function openNav() {
+      if(clickCount%2==0){
+      document.getElementById("mySidenav").style.width = "250px";
+      document.getElementById("main").style.marginLeft = "250px";
+      document.body.style.backgroundColor = "rgba(0,0,0,0.4)";
+    }else{closeNav()}
+    clickCount++;
+  }
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+      document.getElementById("main").style.marginLeft= "0";
+      document.body.style.backgroundColor = "white";
+    }
+  </script>
 </body>
 </html>

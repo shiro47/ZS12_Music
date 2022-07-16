@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load embed_video_tags %}
+{% block content %}
+
+
+<div id="main">
+<div id="mySidenav" class="sidenav">
+    <a href="{% url "logout" %}">
+        <button class="btn btn-primary btn-block btn-large"> Logout 
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </a>
+    <a href="#">Settings</a>
+</div>
+<label for="check">
+    <input type="checkbox" id="check" onclick="openNav()"/> 
+    <span></span>
+    <span></span>
+    <span></span>
+</label>
+{% comment %} <div style="position: fixed; margin-left: 10px; top: 0px !important; left: 0px !important; " >
+    <a href="{% url "logout" %}">
+        <button class="btn btn-primary btn-block btn-large"> Logout 
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </a>
+</div> {% endcomment %}
+
+{% if user.is_superuser %}
+<div class="current_song" style="margin-top: 25px">
+    {% comment %} <div data-video="{{ song_id }}"  
+        data-autoplay="0"         
+        data-loop="1"             
+        id="youtube-audio">
+     </div> {% endcomment %}
+
+    <div style="justify-content: center; align-items: center; display: flex; margin-top: 25px; margin-bottom: 25px ">
+    {% video current_song 'small' %}
+    </div>
+</div>
+        <div class="list-group">
+        {% for s in songs %}
+            <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action" aria-current="true">
+                <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ s.song_title }}</h5>
+                <small>{{ s.song_duration }}</small>
+            </div>
+            <p class="mb-1">{{ s.song_url }}</p>
+            <small>And some small print.</small>
+            </a>
+        {% endfor %}
+        </div>
+{% else %}
+
+<div class="login">
+    <form action="{% url 'dashboard' %}" method="post">
+        {% csrf_token %}
+        <h1>Send your song request!</h1>
+        <input type="text" name="YouTube URL" placeholder="YouTube URL" required="required"></input>
+        <button type="submit" class="btn btn-primary btn-block btn-large">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            {{ message|default:'SEND' }}!
+        </button>
+    </form>
+</div>
+{% endif %}
+</div>
+{% endblock %}
