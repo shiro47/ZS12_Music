@@ -13,6 +13,14 @@
             <span></span>
         </button>
     </a>
+    <a href="{% url "songrequestapp:request_song" %}">
+        <button class="btn btn-primary btn-block btn-large"> SWITCH TO SONG REQUEST
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </a>
     <a href="#">Settings</a>
 </div>
 <label for="check">
@@ -33,46 +41,83 @@
 </div> {% endcomment %}
 
 {% if user.is_superuser %}
-<div class="current_song" style="margin-top: 25px">
+<div class="current_song">
     {% comment %} <div data-video="{{ song_id }}"  
         data-autoplay="0"         
         data-loop="1"             
         id="youtube-audio">
      </div> {% endcomment %}
-
-    <div style="justify-content: center; align-items: center; display: flex; margin-top: 25px; margin-bottom: 25px ">
-    {% video current_song 'small' %}
+    <div class="gradient-border" id="box">
+        <div class="yt-video">
+        {% video current_song_url 'small' %}
+        </div>
+        <div>
+            <div>
+                <marquee  direction="left" height="60px">
+                {{ current_song_title }}
+                </marquee>
+            </div>
+                <a href="{% url "songrequestapp:next_song" %}" style="display: block;">
+                    <button class="btn btn-primary btn-block btn-large">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        Next song
+                    </button>
+                </a>
+        </div>
     </div>
 </div>
         <div class="list-group">
-        {% for s in songs %}
-            <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action" aria-current="true">
-                <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
-            <div class="d-flex w-100 justify-content-between">
-                <h5 class="mb-1">{{ s.song_title }}</h5>
-                <small>{{ s.song_duration }}</small>
+            {% for s,t in songs %}
+            
+                {% if forloop.first %}
+                {% else %}
+            <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;">
+                <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action " aria-current="true">
+                    <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ s.song_title }}</h5>
+                    <small>{{ s.song_duration }}</small>
+                </div>
+                <p  class="mb-1">{{ s.song_url }}</p>
+                <small>Estimated start time: ≈{{ t }}</small>
+                </a>
+                <small>
+                    <form action="{% url 'songrequestapp:delete' s.id  %}"  method="post" id="delete_form_{{ s.id }}">
+                        {% csrf_token %}
+                        <button type="button" onclick="submit_delete({{ s.id }})" value="delete" class="btn" style="padding: 10px 24px; width: 5%; margin: 10px; ">DELETE
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                    </form>
+                </small>
+                
             </div>
-            <p class="mb-1">{{ s.song_url }}</p>
-            <small>And some small print.</small>
-            </a>
-        {% endfor %}
+                {% endif %}
+            
+            {% endfor %}
         </div>
-{% else %}
-
-<div class="login">
-    <form action="{% url 'dashboard' %}" method="post">
-        {% csrf_token %}
-        <h1>Send your song request!</h1>
-        <input type="text" name="YouTube URL" placeholder="YouTube URL" required="required"></input>
-        <button type="submit" class="btn btn-primary btn-block btn-large">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            {{ message|default:'SEND' }}!
-        </button>
-    </form>
-</div>
 {% endif %}
 </div>
 {% endblock %}
+{% block scripts %}
+
+<script>
+        function submit_delete(id) {
+            $.ajax({
+                type: $('#delete_form_'+id).attr('method'),
+                url: $('#delete_form_'+id).attr('action'),
+                data: $('#delete_form_'+id).serialize(),
+                success: function (data) {
+                    $("#song_"+id).fadeOut("slow");
+                }   
+            });
+        }
+      
+</script>
+    
+{% endblock scripts %}

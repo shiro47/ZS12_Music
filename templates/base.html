@@ -17,6 +17,8 @@
   </main>
   {% comment %} <script src="https://www.youtube.com/iframe_api"></script>
   <script src="https://cdn.rawgit.com/labnol/files/master/yt.js"></script> {% endcomment %}
+  {% block scripts %}
+  {% endblock scripts %}
   <script>
     var clickCount = 0;
     function openNav() {
@@ -33,5 +35,6 @@
       document.body.style.backgroundColor = "white";
     }
   </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
 </body>
 </html>

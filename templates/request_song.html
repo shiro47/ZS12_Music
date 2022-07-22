@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div id="snackbar"></div>
+<div id="main">
+    <div id="mySidenav" class="sidenav">
+        <a href="{% url "logout" %}">
+            <button class="btn btn-primary btn-block btn-large"> Logout 
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </a>
+    </div>
+    <label for="check">
+        <input type="checkbox" id="check" onclick="openNav()"/> 
+        <span></span>
+        <span></span>
+        <span></span>
+    </label>
+
+
+
+    <div class="login">
+        <form method="post" id="request-song">
+            {% csrf_token %}
+            <h1>Send your song request!</h1>
+            <input type="text" name="YouTube URL" placeholder="YouTube URL" required="required" id="url"></input>
+            <button type="button" onclick="submit_song()" class="btn btn-primary btn-block btn-large">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                SEND!
+            </button>
+        </form>
+        {% if user.is_superuser %}
+        <a href="{% url "songrequestapp:dashboard" %}">
+            <button class="btn btn-primary btn-block btn-large">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                SWITCH TO ADMIN PANEL
+            </button>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+
+<script>
+    function submit_song() {
+        $.ajax({
+            type: $('#request-song').attr('method'),
+            url: $('#request-song').attr('action'),
+            data: $('#request-song').serialize(),
+            success: function (resp) {
+                var x = document.getElementById("snackbar");
+                x.innerHTML = resp.message;
+                x.className = "show";
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+            }   
+        });
+    }
+  
+</script>
+    
+{% endblock scripts %}

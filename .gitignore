@@ -10,3 +10,7 @@ songrequestapp/__pycache__/models.cpython-310.pyc
 songrequestapp/__pycache__/urls.cpython-310.pyc
 songrequestapp/__pycache__/views.cpython-310.pyc
 songrequestapp/migrations/__pycache__/__init__.cpython-310.pyc
+first_project/__pycache__/settings.cpython-39.pyc
+songrequestapp/__pycache__/urls.cpython-39.pyc
+songrequestapp/__pycache__/views.cpython-39.pyc
+songrequestapp/__pycache__/youtube_api.cpython-39.pyc
