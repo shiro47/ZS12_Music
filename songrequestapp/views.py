@@ -7,12 +7,16 @@ from requests import request
 from songrequestapp.forms import CustomUserCreationForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required, user_passes_test
-import pymongo
+from pymongo import MongoClient
 from datetime import datetime
 from datetime import timedelta
 from .models import song
 from .youtube_api import scrape_title, video_id, get_sec
+from bson.objectid import ObjectId
 # Create your views here.
+
+client = MongoClient("mongodb+srv://shiro_47:cJOKjP8VgVrl0M7l@song-request.la9qn.mongodb.net/?retryWrites=true&w=majority")
+db = client['song-request']
 
 def register(request):
     if request.method == "GET":
@@ -27,38 +31,19 @@ def register(request):
             login(request, user)
             return redirect(reverse("index"))
 
-
-# client = pymongo.MongoClient('mongodb+srv://username:password@HOSTNAME/DATABASE_NAME?authSource=admin&tls=true&tlsCAFile=<PATH_TO_CA_FILE>')
-
-# #Define Db Name
-# dbname = client['admin']
-
-# #Define Collection
-# collection = dbname['mascot']
-
-# mascot_1={
-#     "name": "Sammy",
-#     "type" : "Shark"
-# }
-
-# collection.insert_one(mascot_1)
-
-# mascot_details = collection.find({})
-
-# for r in mascot_details:
-#     print(r['name'])
-
-
 def index(request):
     return render(request, 'index.html', {})
 
 @login_required(login_url='/accounts/login/')
 def request_song(request):
     if request.method == 'POST':
+        songs_blacklist=db["songs_blacklist"]
         try:
             if song.objects.get(song_url=request.POST["YouTube URL"]):
                 return JsonResponse({"message":"ALREADY IN QUEUE"})
         except ObjectDoesNotExist:
+            if songs_blacklist.find_one({"url": request.POST["YouTube URL"]})!=None or songs_blacklist.find_one({"title": scrape_title(request.POST["YouTube URL"])[0]})!=None:
+                return JsonResponse({"message": "SONG IS BLACKLISTED"})
             if "www.youtube.com" in request.POST["YouTube URL"] or "youtu.be" in request.POST["YouTube URL"]:
                 url= request.POST["YouTube URL"]
                 data=scrape_title(url)
@@ -96,11 +81,21 @@ def dashboard(request):
         dict={"songs":zip(songs,songs_play_times),
             "current_song_url": current_song_url,
             "current_song_title": current_song_title,
+            "current_song_id": songs[0].id,
             "song_id":video_id(current_song_url),
                     }
         return render(request, 'dashboard.html', dict)
     except:
         return render(request, 'dashboard.html')
+
+@user_passes_test(lambda u: u.is_superuser)
+def songs_blacklist(request):
+    songs_blacklist=db["songs_blacklist"]
+    songs=[]
+    for s in songs_blacklist.find():
+        songs.append(s)
+    dict={"songs":songs}
+    return render(request, "songs_blacklist.html", dict)
 
 @user_passes_test(lambda u: u.is_superuser)
 def next_song(request):
@@ -114,8 +109,28 @@ def next_song(request):
 
 @user_passes_test(lambda u: u.is_superuser)
 def song_delete(request, id):
-    card_that_is_ready_to_be_deleted = get_object_or_404(song, id=id)
+    song_that_is_ready_to_be_deleted = get_object_or_404(song, id=id)
     if request.method == 'POST':
-        card_that_is_ready_to_be_deleted.delete()
+        song_that_is_ready_to_be_deleted.delete()
 
     return HttpResponseRedirect('/dashboard')
+
+@user_passes_test(lambda u: u.is_superuser)
+def add_song_to_blacklist(request, id): 
+    Song = get_object_or_404(song, id=id)
+    songs_blacklist=db["songs_blacklist"]
+    if songs_blacklist.find_one({"url": Song.song_url})==None or songs_blacklist.find_one({"title": Song.song_title})==None:
+        info={"url": Song.song_url, "title":Song.song_title, "duration":Song.song_duration, "thumbnail": Song.song_thumbnail}
+        songs_blacklist.insert_one(info)
+        Song.delete()
+
+    return HttpResponseRedirect('/dashboard')
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def remove_from_blacklist(request, id): 
+    print('fsd')
+    songs_blacklist=db["songs_blacklist"]
+    songs_blacklist.delete_one({"_id": ObjectId(id)})
+    return JsonResponse({"message":"DELETED"})
+

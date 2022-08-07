@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load templates %}
+{% block content %}
+<div id="main">
+    <div id="mySidenav" class="sidenav">
+        <a href="{% url "logout" %}">
+            <button class="btn btn-primary btn-block btn-large"> Logout 
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </a>
+        <a href="{% url "songrequestapp:request_song" %}">
+            <button class="btn btn-primary btn-block btn-large"> SWITCH TO SONG REQUEST
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </a>
+        <a href="{% url "songrequestapp:dashboard" %}">
+            <button class="btn btn-primary btn-block btn-large"> SWITCH TO DASHBOARD
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </a>
+    </div>
+    <label for="check">
+        <input type="checkbox" id="check" onclick="openNav()"/> 
+        <span></span>
+        <span></span>
+        <span></span>
+    </label>
+
+{% if songs %}
+{% if user.is_superuser %}
+<h1 style="text-align: center; font-size: 75px;">Blacklisted songs</h1>
+    <div class="list-group">
+        {% for s in songs %}
+        <div class="list-item" id="song_{{s|mongo_id:'_id'}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;">
+            <a href="{{ s.url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action " aria-current="true">
+                <img src="{{ s.thumbnail }}" style="width:120px;height:90px;">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ s.title }}</h5>
+                <small>{{ s.duration }}</small>
+            </div>
+            <p  class="mb-1">{{ s.url }}</p>
+            </a>
+            <small style="">
+                <form action="{% url 'songrequestapp:remove_from_blacklist' s|mongo_id:'_id'  %}"  method="post" id="delete_from_blacklist{{ s|mongo_id:'_id' }}" style="display:inline-block;">
+                    {% csrf_token %}
+                    <button type="button" onclick="submit_delete_from_blacklist({{ s|mongo_id:'_id' }})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">DELETE
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </form>
+            </small>
+            
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+        function submit_delete_from_blacklist(id) {
+            $.ajax({
+                type: $('#delete_from_blacklist'+id).attr('method'),
+                url: $('#delete_from_blacklist'+id).attr('action'),
+                data: $('#delete_from_blacklist'+id).serialize(),
+                success: function (resp) {
+                    $("#song_"+id).fadeOut("slow");
+                }   
+            });
+        }
+</script>
+{% endblock scripts %}

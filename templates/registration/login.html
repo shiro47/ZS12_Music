@@ -18,14 +18,14 @@
           Let me in.
         </button>
     </form>
+  <a href="{% url 'songrequestapp:register' %}">
+    <button class="btn btn-primary btn-block btn-large">
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      Register
+    </button>
+  </a>
 </div>
-
-{% comment %} <p1>gfgd</p1>
-<h2>Log In</h2>
-<h3>add</h3>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Log In</button> {% endcomment %}
-</form>
 {% endblock %}

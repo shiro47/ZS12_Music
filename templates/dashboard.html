@@ -21,7 +21,14 @@
             <span></span>
         </button>
     </a>
-    <a href="#">Settings</a>
+    <a href="{% url "songrequestapp:songs_blacklist" %}">
+        <button class="btn btn-primary btn-block btn-large">Blacklisted songs
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </a>
 </div>
 <label for="check">
     <input type="checkbox" id="check" onclick="openNav()"/> 
@@ -29,41 +36,36 @@
     <span></span>
     <span></span>
 </label>
-{% comment %} <div style="position: fixed; margin-left: 10px; top: 0px !important; left: 0px !important; " >
-    <a href="{% url "logout" %}">
-        <button class="btn btn-primary btn-block btn-large"> Logout 
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </a>
-</div> {% endcomment %}
 
+{% if songs %}
 {% if user.is_superuser %}
 <div class="current_song">
-    {% comment %} <div data-video="{{ song_id }}"  
-        data-autoplay="0"         
-        data-loop="1"             
-        id="youtube-audio">
-     </div> {% endcomment %}
     <div class="gradient-border" id="box">
         <div class="yt-video">
         {% video current_song_url 'small' %}
         </div>
         <div>
             <div>
-                <marquee  direction="left" height="60px">
+                <marquee  direction="left" height="60px" width="300px">
                 {{ current_song_title }}
                 </marquee>
             </div>
-                <a href="{% url "songrequestapp:next_song" %}" style="display: block;">
+                <a href="{% url "songrequestapp:next_song" %}" style="display: block; height: 100px;">
                     <button class="btn btn-primary btn-block btn-large">
                         <span></span>
                         <span></span>
                         <span></span>
                         <span></span>
                         Next song
+                    </button>
+                </a>
+                <a href="{% url 'songrequestapp:add_to_blacklist' current_song_id  %}" style="display: block; height: 100px;">
+                    <button class="btn btn-primary btn-block btn-large">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        Add to blacklist
                     </button>
                 </a>
         </div>
@@ -84,10 +86,19 @@
                 <p  class="mb-1">{{ s.song_url }}</p>
                 <small>Estimated start time: ≈{{ t }}</small>
                 </a>
-                <small>
-                    <form action="{% url 'songrequestapp:delete' s.id  %}"  method="post" id="delete_form_{{ s.id }}">
+                <small style="">
+                    <form action="{% url 'songrequestapp:delete' s.id  %}"  method="post" id="delete_form_{{ s.id }}" style="display:inline-block;">
                         {% csrf_token %}
-                        <button type="button" onclick="submit_delete({{ s.id }})" value="delete" class="btn" style="padding: 10px 24px; width: 5%; margin: 10px; ">DELETE
+                        <button type="button" onclick="submit_delete({{ s.id }})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">DELETE
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                    </form>
+                    <form action="{% url 'songrequestapp:add_to_blacklist' s.id  %}"  method="post" id="submit_form_to_blacklist{{ s.id }}" style="display:inline-block;">
+                        {% csrf_token %}
+                        <button type="button" onclick="submit_song_to_blacklist({{ s.id }})" value="delete" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">ADD TO BLACKLIST
                             <span></span>
                             <span></span>
                             <span></span>
@@ -101,6 +112,7 @@
             
             {% endfor %}
         </div>
+{% endif %}
 {% endif %}
 </div>
 {% endblock %}
@@ -117,7 +129,17 @@
                 }   
             });
         }
-      
 </script>
-    
+<script>
+    function submit_song_to_blacklist(id) {
+        $.ajax({
+            type: $('#submit_form_to_blacklist'+id).attr('method'),
+            url: $('#submit_form_to_blacklist'+id).attr('action'),
+            data: $('#submit_form_to_blacklist'+id).serialize(),
+            success: function (data) {
+                $("#song_"+id).fadeOut("slow");
+            }   
+        });
+    }
+</script>
 {% endblock scripts %}
