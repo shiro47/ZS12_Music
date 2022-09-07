@@ -19,3 +19,14 @@ songrequestapp/__pycache__/youtube_api.cpython-39.pyc
 first_project/__pycache__/settings.cpython-39.pyc
 songrequestapp/__pycache__/urls.cpython-39.pyc
 songrequestapp/__pycache__/views.cpython-39.pyc
+first_project/__pycache__/asgi.cpython-310.pyc
+songrequestapp/__pycache__/consumers.cpython-310.pyc
+songrequestapp/__pycache__/routing.cpython-310.pyc
+songrequestapp/__pycache__/youtube_api.cpython-310.pyc
+songrequestapp/migrations/__pycache__/0001_initial.cpython-310.pyc
+songrequestapp/migrations/__pycache__/0002_alter_song_options_rename_song_video_song_song_url_and_more.cpython-310.pyc
+songrequestapp/migrations/__pycache__/0003_song_song_title.cpython-310.pyc
+songrequestapp/migrations/__pycache__/0004_song_song_duration_song_song_thumbnail.cpython-310.pyc
+songrequestapp/migrations/__pycache__/0005_songs_play_history_song_skip_requests.cpython-310.pyc
+songrequestapp/templatetags/__pycache__/__init__.cpython-310.pyc
+songrequestapp/templatetags/__pycache__/templates.cpython-310.pyc

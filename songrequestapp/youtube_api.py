@@ -25,20 +25,24 @@ def video_id(value):
     return None
 
 def scrape_title(url):
-    youtube = build('youtube','v3', developerKey="AIzaSyA2m8CGKeNOE4OaPdgDQYZdlyCt-uasSFQ") 
+   try:
+      youtube = build('youtube', 'v3',
+                      developerKey="AIzaSyA2m8CGKeNOE4OaPdgDQYZdlyCt-uasSFQ")
 
+      video_request = youtube.videos().list(
+          part='snippet,statistics, contentDetails',
+          id=video_id(url)
+      )
 
-    video_request=youtube.videos().list(
-    part='snippet,statistics, contentDetails',
-    id=video_id(url)
-)
-  
-    video_response = video_request.execute()
-    title = video_response['items'][0]['snippet']['title']
-    duration= video_response['items'][0]['contentDetails']['duration']
-    duration= time.strftime('%H:%M:%S', time.gmtime(convert_YouTube_duration_to_seconds(duration)))
-    thumbnail= video_response['items'][0]['snippet']['thumbnails']['default']['url']
-    return title, duration, thumbnail
+      video_response = video_request.execute()
+      title = video_response['items'][0]['snippet']['title']
+      duration = video_response['items'][0]['contentDetails']['duration']
+      duration = time.strftime('%H:%M:%S', time.gmtime(
+          convert_YouTube_duration_to_seconds(duration)))
+      thumbnail = video_response['items'][0]['snippet']['thumbnails']['default']['url']
+      return title, duration, thumbnail
+   except:
+      return None
 
 
 def convert_YouTube_duration_to_seconds(duration):

@@ -1,83 +1,90 @@
 {% extends 'base.html' %}
-{% load embed_video_tags %}
 {% block content %}
 
 
 <div id="main">
-<div id="mySidenav" class="sidenav">
-    <a href="{% url "logout" %}">
-        <button class="btn btn-primary btn-block btn-large"> Logout 
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </a>
-    <a href="{% url "songrequestapp:request_song" %}">
-        <button class="btn btn-primary btn-block btn-large"> SWITCH TO SONG REQUEST
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </a>
-    <a href="{% url "songrequestapp:songs_blacklist" %}">
-        <button class="btn btn-primary btn-block btn-large">Blacklisted songs
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </a>
-</div>
-<label for="check">
-    <input type="checkbox" id="check" onclick="openNav()"/> 
-    <span></span>
-    <span></span>
-    <span></span>
-</label>
 
+<body id="body-pd">
+    <header class="header" id="header">
+        <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
+    </header>
+    <div class="l-navbar" id="nav-bar">
+        <nav class="nav">
+            <div> 
+                <a href="{% url "songrequestapp:index" %}" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> 
+                    <span class="nav_logo-name">BBBootstrap</span> 
+                </a>
+                <div class="nav_list"> 
+                    <a href="#" class="nav_link active"> 
+                        <i class='bx bx-grid-alt nav_icon'></i> <span class="nav_name">Dashboard</span>
+                    </a> 
+                    <a href="{% url "songrequestapp:request_song" %}" class="nav_link"> 
+                        <i class='bx bxs-music nav_icon'></i> <span class="nav_name">Song request</span>
+                    </a>
+                    <a href="{% url "songrequestapp:songs_blacklist" %}" class="nav_link"> 
+                        <i class='bx bx-minus-circle nav_icon'></i> <span class="nav_name">Blacklist</span>
+                    </a> 
+                    <a href="{% url "songrequestapp:songs_history" %}" class="nav_link"> 
+                        <i class='bx bx-history nav_icon'></i> <span class="nav_name">History</span> 
+                    </a> 
+                    <a href="#" class="nav_link"> 
+                        <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
+                    </a>
+                    <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                    </a> 
+                </div>
+            </div> 
+            <a href="{% url "logout" %}" class="nav_link"> 
+                <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">SignOut</span> 
+            </a>
+        </nav>
+    </div>
+    <div id="loader"></div>
 {% if songs %}
 {% if user.is_superuser %}
-<div class="current_song">
-    <div class="gradient-border" id="box">
-        <div class="yt-video">
-        {% video current_song_url 'small' %}
+<div class="card mb-3 gradient-border" style="max-width: 880px; justify-content: center; margin: 0 auto; margin-top: 5px;">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <div class="responsive-embed">
+            <iframe class="responsive-iframe" src="https://www.youtube.com/embed/{{ current_song_url }}?autoplay=1" allowfullscreen></iframe>
         </div>
-        <div>
-            <div>
-                <marquee  direction="left" height="60px" width="300px">
-                {{ current_song_title }}
-                </marquee>
-            </div>
-                <a href="{% url "songrequestapp:next_song" %}" style="display: block; height: 100px;">
-                    <button class="btn btn-primary btn-block btn-large">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        Next song
-                    </button>
-                </a>
-                <a href="{% url 'songrequestapp:add_to_blacklist' current_song_id  %}" style="display: block; height: 100px;">
-                    <button class="btn btn-primary btn-block btn-large">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                        Add to blacklist
-                    </button>
-                </a>
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title"><marquee  direction="left">{{ current_song_title }}</marquee></h5>
+          <p class="card-text" style="justify-content: center; align-items: center; display: flex;">
+            <a href="{% url "songrequestapp:next_song" %}" style="display:inline-block;">
+                <button class="btn" style="padding: 10px 30px; max-width: 200px; margin: 0 auto;">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    Next song
+                </button>
+            </a>
+            <a href="{% url 'songrequestapp:add_to_blacklist' current_song_id  %}" style="display:inline-block;">
+                <button class="btn" style="padding: 10px 30px; max-width: 280px; margin: 0 auto; margin-left: 20px; ">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    Add to blacklist
+                </button>
+            </a>
+          </p>
+          <p class="card-text"><small id='skip_requests'>Skip requests: {{ current_song_skip_requests }} <i class="bi bi-skip-forward"></i></small></p>
         </div>
+      </div>
     </div>
 </div>
+
         <div class="list-group">
             {% for s,t in songs %}
             
                 {% if forloop.first %}
                 {% else %}
-            <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;">
-                <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action " aria-current="true">
+            <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #1D1F20;">
+                <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action ">
                     <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
                 <div class="d-flex w-100 justify-content-between">
                     <h5 class="mb-1">{{ s.song_title }}</h5>
@@ -124,9 +131,17 @@
                 type: $('#delete_form_'+id).attr('method'),
                 url: $('#delete_form_'+id).attr('action'),
                 data: $('#delete_form_'+id).serialize(),
+                beforeSend: function(){
+                    // Show image container
+                    document.getElementById("loader").style.display = "block";
+                   },
                 success: function (data) {
                     $("#song_"+id).fadeOut("slow");
-                }   
+                },
+                complete: function(){
+                    // Hide image container
+                    document.getElementById("loader").style.display = "none";
+                },   
             });
         }
 </script>
@@ -136,10 +151,26 @@
             type: $('#submit_form_to_blacklist'+id).attr('method'),
             url: $('#submit_form_to_blacklist'+id).attr('action'),
             data: $('#submit_form_to_blacklist'+id).serialize(),
+            beforeSend: function(){
+                // Show image container
+                document.getElementById("loader").style.display = "block";
+            },
             success: function (data) {
                 $("#song_"+id).fadeOut("slow");
-            }   
+            },
+            complete: function(){
+                // Hide image container
+                document.getElementById("loader").style.display = "none";
+            },    
         });
     }
 </script>
+<script>
+    var socket = new WebSocket('ws://localhost:8000/ws/some_url/');
+    console.log("connected");
+    socket.onmessage=function(e){
+        console.log('message',e)
+    }
+</script>
+
 {% endblock scripts %}

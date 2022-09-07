@@ -2,52 +2,122 @@
 {% block content %}
 
 <div id="snackbar" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;"></div>
-<div id="main">
-    <div id="mySidenav" class="sidenav">
-        <a href="{% url "logout" %}">
-            <button class="btn btn-primary btn-block btn-large"> Logout 
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </a>
-    </div>
-    <label for="check">
-        <input type="checkbox" id="check" onclick="openNav()"/> 
-        <span></span>
-        <span></span>
-        <span></span>
-    </label>
 
-
-
+    <body id="body-pd">
+        <header class="header" id="header">
+            <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
+        </header>
+        <div class="l-navbar" id="nav-bar">
+            <nav class="nav">
+                <div> 
+                    <a href="#" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> 
+                        <span class="nav_logo-name">BBBootstrap</span> 
+                    </a>
+                    <div class="nav_list"> 
+                        {% if user.is_superuser %}
+                            <a href="{% url "songrequestapp:dashboard" %}" class="nav_link"> 
+                                <i class='bx bx-grid-alt nav_icon'></i> <span class="nav_name">Dashboard</span>
+                            </a> 
+                            <a href="{% url "songrequestapp:request_song" %}" class="nav_link active"> 
+                                <i class='bx bxs-music nav_icon'></i> <span class="nav_name">Song request</span>
+                            </a>
+                            <a href="{% url "songrequestapp:songs_blacklist" %}" class="nav_link"> 
+                                <i class='bx bx-minus-circle nav_icon'></i> <span class="nav_name">Blacklist</span>
+                            </a> 
+                            <a href="{% url "songrequestapp:songs_history" %}" class="nav_link"> 
+                                <i class='bx bx-history nav_icon'></i> <span class="nav_name">History</span> 
+                            </a> 
+                            <a href="#" class="nav_link"> 
+                                <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
+                            </a>
+                            <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                            </a> 
+                        {% else %}
+                            <a href="{% url "songrequestapp:request_song" %}" class="nav_link active"> 
+                                <i class='bx bxs-music nav_icon'></i> <span class="nav_name">Song request</span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div> 
+                <a href="{% url "logout" %}" class="nav_link"> 
+                    <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">SignOut</span> 
+                </a>
+            </nav>
+        </div>
+        <div id="loader"></div>
     <div class="login">
         <form method="post" id="request-song">
             {% csrf_token %}
             <h1>Send your song request!</h1>
             <input type="text" name="YouTube URL" placeholder="YouTube URL" required="required" id="url"></input>
-            <button type="button" onclick="submit_song()" class="btn btn-primary btn-block btn-large">
+            <button id="send_button" type="button" onclick="submit_song()" class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px; ">
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
                 SEND!
             </button>
+            
         </form>
-        {% if user.is_superuser %}
-        <a href="{% url "songrequestapp:dashboard" %}">
-            <button class="btn btn-primary btn-block btn-large">
+        <a href="#demo-modal">
+            <button class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px;">
                 <span></span>
                 <span></span>
                 <span></span>
                 <span></span>
-                SWITCH TO ADMIN PANEL
+                SONGS QUEUE
             </button>
-        </a>
-        {% endif %}
+        </a>    
     </div>
 </div>
+
+<div id="demo-modal" class="modal">
+    <div class="modal__content gradient-border">
+        <h1 style="color: #fff">Songs queue</h1>
+        <div class="list-group">
+            {% for s,t in songs %}
+            
+                {% if forloop.first %}
+                <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;">
+                    <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-primary" aria-current="true">
+                        <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">1. {{ s.song_title }}</h5>
+                        <small style="margin: 3px">{{ s.song_duration }}</small>
+                    </div>
+                    <small style="color: green; font-weight: bold; ">Currently playing</small>
+                    </a>
+                    <small>
+                        <form action="{% url 'songrequestapp:skip_vote' s.id  %}"  method="post" id="skip_vote_{{ s.id }}" style="display:inline-block;">
+                            {% csrf_token %}
+                            <button type="button" onclick="submit_skip_vote({{ s.id }})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">VOTE SKIP
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </button>
+                        </form>
+                    </small>
+                </div>
+                {% else %}
+            <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;">
+                <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action ">
+                    <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ forloop.counter }}. {{ s.song_title }}</h5>
+                    <small style="margin: 3px">{{ s.song_duration }}</small>
+                </div>
+                <small>Estimated start time: ≈{{ t }}</small>
+                </a>
+                
+            </div>
+                {% endif %}
+        
+            {% endfor %}
+        </div>
+        <a href="#" class="modal__close">&times;</a>
+    </div>
+
 
 {% endblock %}
 {% block scripts %}
@@ -58,15 +128,53 @@
             type: $('#request-song').attr('method'),
             url: $('#request-song').attr('action'),
             data: $('#request-song').serialize(),
+            beforeSend: function(){
+                // Show image container
+                document.getElementById("loader").style.display = "block";
+               },
             success: function (resp) {
                 var x = document.getElementById("snackbar");
                 x.innerHTML = resp.message;
                 x.className = "show";
                 setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-            }   
+            },   
+            complete: function(){
+                // Hide image container
+                document.getElementById("loader").style.display = "none";
+            },
         });
     }
   
 </script>
-    
+
+<script>
+    var socket = new WebSocket('ws://localhost:8000/ws/some_url/');
+    function submit_skip_vote(id) {
+        $.ajax({
+            type: $('#skip_vote_'+id).attr('method'),
+            url: $('#skip_vote_'+id).attr('action'),
+            data: $('#skip_vote_'+id).serialize(),
+            beforeSend: function(){
+                // Show image container
+                document.getElementById("loader").style.display = "block";
+               },
+            success: function (resp) {
+                socket.send("Skip vote sended.");
+                socket.close();
+                var x = document.getElementById("snackbar");
+                x.innerHTML = resp.message;
+                x.className = "show";
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                
+            },   
+            complete: function(){
+                // Hide image container
+                document.getElementById("loader").style.display = "none";
+            },
+        });
+    }
+</script>
 {% endblock scripts %}
+{% comment %} function (){
+    
+}; {% endcomment %}
