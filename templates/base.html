@@ -15,6 +15,26 @@
   
 </head>
 <body>
+  <div id="snackbar" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;"></div>
+  
+  <div id="loader"></div>
+
+  <div id="bug-report-modal" class="modal">
+    <div class="modal__content gradient-border">
+        <h1 style="color: #fff">Report a bug</h1>
+        <form action="{% url 'songrequestapp:bug_report'  %}"  method="post" id="report_bug_form">
+          {% csrf_token %}
+          <textarea rows="5" cols="60" name="description" placeholder="Describe a bug..." required="required"></textarea>
+          <button type="button" onclick="submit_bug()" class="btn" style="padding: 10px 30px;  margin-top: 10px; margin-bottom: 10px;">SEND
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </form>
+        <a href="#" class="modal__close">&times;</a>
+    </div>
+  </div>
   <main>
     {% block content %}
     {% endblock %}
@@ -23,6 +43,29 @@
   <script src="https://cdn.rawgit.com/labnol/files/master/yt.js"></script> {% endcomment %}
   {% block scripts %}
   {% endblock scripts %}
+  <script>
+    function submit_bug() {
+      $.ajax({
+          type: $('#report_bug_form').attr('method'),
+          url: $('#report_bug_form').attr('action'),
+          data: $('#report_bug_form').serialize(),
+          beforeSend: function(){
+              // Show image container
+              document.getElementById("loader").style.display = "block";
+             },
+          success: function (resp) {
+              var x = document.getElementById("snackbar");
+              x.innerHTML = resp.message;
+              x.className = "show";
+              setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+          },   
+          complete: function(){
+              // Hide image container
+              document.getElementById("loader").style.display = "none";
+          },
+      });
+  }
+  </script>
   <script>
     document.addEventListener("DOMContentLoaded", function(event) {
    

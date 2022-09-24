@@ -11,8 +11,8 @@
     <div class="l-navbar" id="nav-bar">
         <nav class="nav">
             <div> 
-                <a href="{% url "songrequestapp:index" %}" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> 
-                    <span class="nav_logo-name">BBBootstrap</span> 
+                <a href="{% url "songrequestapp:index" %}" class="nav_logo"> <i class='bi bi-music-note-list nav_logo-icon'></i> 
+                    <span class="nav_logo-name">SONG REQUEST</span> 
                 </a>
                 <div class="nav_list"> 
                     <a href="#" class="nav_link active"> 
@@ -27,10 +27,14 @@
                     <a href="{% url "songrequestapp:songs_history" %}" class="nav_link"> 
                         <i class='bx bx-history nav_icon'></i> <span class="nav_name">History</span> 
                     </a> 
-                    <a href="#" class="nav_link"> 
+                    <a href="{% url "songrequestapp:account" %}" class="nav_link"> 
                         <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
                     </a>
-                    <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                    <a href="#" class="nav_link"> 
+                        <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                    </a> 
+                    <a href="#bug-report-modal" class="nav_link"> 
+                        <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
                     </a> 
                 </div>
             </div> 
@@ -39,10 +43,10 @@
             </a>
         </nav>
     </div>
-    <div id="loader"></div>
+    <h1 id="songs_status" style="visibility: visible; position:fixed; left: 50%; transform: translateX(-50%);">SONGS QUEUE IS EMPTY</h1>
 {% if songs %}
 {% if user.is_superuser %}
-<div class="card mb-3 gradient-border" style="max-width: 880px; justify-content: center; margin: 0 auto; margin-top: 5px;">
+<div id="song_player" class="card mb-3 gradient-border" style="max-width: 1060px; justify-content: center; margin: 0 auto; margin-top: 5px;">
     <div class="row g-0">
       <div class="col-md-4">
         <div class="responsive-embed">
@@ -72,22 +76,29 @@
                 </button>
             </a>
           </p>
-          <p class="card-text"><small id='skip_requests'>Skip requests: {{ current_song_skip_requests }} <i class="bi bi-skip-forward"></i></small></p>
+          <p class="card-text" ><small id='skip_requests'>Skip requests: {{ current_song_skip_requests }}</small><small> <i class="bi bi-skip-forward"></i></small></p>
         </div>
       </div>
     </div>
 </div>
-
-        <div class="list-group">
+        <div id="control_panel" style="margin-left: 2%; margin-right:2%; border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;">
+            <button class="btn" onclick="clear_queue()" style="padding: 10px 30px; max-width: 280px; margin: 5px;">CLEAR QUEUE
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+        <div class="list-group" id="songs_queue">
             {% for s,t in songs %}
             
                 {% if forloop.first %}
                 {% else %}
-            <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #1D1F20;">
+            <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;">
                 <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action ">
                     <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
                 <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">{{ s.song_title }}</h5>
+                    <h5 class="mb-1">#{{ forloop.counter0 }}. {{ s.song_title }}</h5>
                     <small>{{ s.song_duration }}</small>
                 </div>
                 <p  class="mb-1">{{ s.song_url }}</p>
@@ -124,6 +135,12 @@
 </div>
 {% endblock %}
 {% block scripts %}
+
+{% if songs %}
+<script>
+    document.getElementById("songs_status").style.visibility = "hidden";
+</script>
+{% endif %}
 
 <script>
         function submit_delete(id) {
@@ -166,11 +183,52 @@
     }
 </script>
 <script>
-    var socket = new WebSocket('ws://localhost:8000/ws/some_url/');
+    function clear_queue() {
+        $.ajax({
+            type: "POST",
+            url: "{% url 'songrequestapp:clear_queue' %}",
+            data: { csrfmiddlewaretoken: "{{ csrf_token }}",
+            state:"inactive" 
+            },
+            beforeSend: function(){
+                // Show image container
+                document.getElementById("loader").style.display = "block";
+            },
+            success: function (data) {
+                $("#songs_queue").fadeOut("slow");
+                $("#song_player").fadeOut("slow");
+                $("#control_panel").fadeOut("slow");
+                document.getElementById("songs_status").style.visibility = "visible";
+            },
+            complete: function(){
+                // Hide image container
+                document.getElementById("loader").style.display = "none";
+            },    
+        });
+    }
+</script>
+{% comment %} <script>
+    var wsStart='ws://'
+    var endpoint=wsStart + window.location.host + "/ws/some_url/"
+    var socket = new WebSocket(endpoint);
+    console.log(endpoint);
     console.log("connected");
+    socket.onopen =function(e){
+        console.log('open',e)
+        };
     socket.onmessage=function(e){
         console.log('message',e)
     }
-</script>
-
+</script> {% endcomment %}
+{% comment %} <script>
+    setInterval(function get_skip_votes() {
+        $.ajax({
+            type: "GET",
+            url: "{% url 'songrequestapp:skip_vote' 0 %}",
+            success: function (data) {
+                document.getElementById("skip_requests").innerHTML ="Skip requests: "+data.message;
+            },
+        });
+    }, 10000);
+</script> {% endcomment %}
 {% endblock scripts %}

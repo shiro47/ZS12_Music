@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load templates %}
 {% block content %}
-<div id="snackbar" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;"></div>
     <body id="body-pd">
         <header class="header" id="header">
             <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
@@ -9,8 +8,8 @@
         <div class="l-navbar" id="nav-bar">
             <nav class="nav">
                 <div> 
-                    <a href="#" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> 
-                        <span class="nav_logo-name">BBBootstrap</span> 
+                    <a href="{% url "songrequestapp:index" %}" class="nav_logo"> <i class='bi bi-music-note-list nav_logo-icon'></i> 
+                        <span class="nav_logo-name">SONG REQUEST</span> 
                     </a>
                     <div class="nav_list"> 
                         <a href="{% url "songrequestapp:dashboard" %}" class="nav_link"> 
@@ -25,10 +24,14 @@
                         <a href="{% url "songrequestapp:songs_history" %}" class="nav_link active"> 
                             <i class='bx bx-history nav_icon'></i> <span class="nav_name">History</span> 
                         </a> 
-                        <a href="#" class="nav_link"> 
+                        <a href="{% url "songrequestapp:account" %}" class="nav_link"> 
                             <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
                         </a> 
-                        <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                        <a href="#" class="nav_link"> 
+                            <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                        </a> 
+                        <a href="#bug-report-modal" class="nav_link"> 
+                            <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
                         </a> 
                     </div>
                 </div> 
@@ -37,13 +40,13 @@
                 </a>
             </nav>
         </div>
-        <div id="loader"></div>
+
+<h1 style="text-align: center; font-size: 75px;">History</h1>
 {% if songs %}
 {% if user.is_superuser %}
-<h1 style="text-align: center; font-size: 75px;">History</h1>
 <div class="list-group">
     {% for s in songs %}    
-    <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;">
+    <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;">
         <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action " aria-current="true">
             <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
         <div class="d-flex w-100 justify-content-between">
@@ -62,10 +65,10 @@
                     <span></span>
                 </button>
             </form>
-            <form action="{% url 'songrequestapp:request_song'  %}" method="post" id="request-song" style="display:inline-block;">
+            <form action="{% url 'songrequestapp:request_song'  %}" method="post" id="request-song-{{ s.id }}" style="display:inline-block;">
                 {% csrf_token %}
                 <input type="hidden" name="YouTube URL" value="{{ s.song_url }}"></input>
-                <button type="button" onclick="submit_song()" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">REQUEST
+                <button type="button" onclick="submit_song({{ s.id }})" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">REQUEST
                     <span></span>
                     <span></span>
                     <span></span>
@@ -77,6 +80,8 @@
         {% endfor %}
     </div>
 {% endif %}
+{% else %}
+<h1 style="text-align: center;">Songs history is empty!</h1>
 {% endif %}
 </div>
 {% endblock %}
@@ -102,11 +107,11 @@
         }
 </script>
 <script>
-    function submit_song() {
+    function submit_song(id) {
         $.ajax({
-            type: $('#request-song').attr('method'),
-            url: $('#request-song').attr('action'),
-            data: $('#request-song').serialize(),
+            type: $('#request-song-'+id).attr('method'),
+            url: $('#request-song-'+id).attr('action'),
+            data: $('#request-song-'+id).serialize(),
             beforeSend: function(){
                 // Show image container
                 document.getElementById("loader").style.display = "block";

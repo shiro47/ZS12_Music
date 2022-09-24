@@ -1,10 +1,7 @@
-from email import message
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
-from django.views import View
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
-from requests import request
 from songrequestapp.forms import CustomUserCreationForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -20,6 +17,9 @@ from .consumers import WSConsumer
 client = MongoClient("mongodb+srv://shiro_47:cJOKjP8VgVrl0M7l@song-request.la9qn.mongodb.net/?retryWrites=true&w=majority")
 db = client['song-request']
 
+def index(request):
+    return render(request, 'index.html', {})
+
 def register(request):
     if request.method == "GET":
         return render(
@@ -33,8 +33,6 @@ def register(request):
             login(request, user)
             return redirect(reverse("index"))
 
-def index(request):
-    return render(request, 'index.html', {})
 
 @login_required(login_url='/accounts/login/')
 def request_song(request):
@@ -42,11 +40,10 @@ def request_song(request):
         songs_blacklist=db["songs_blacklist"]
         try:
             if song.objects.get(song_url=request.POST["YouTube URL"]):
-                print(request.POST["YouTube URL"])
                 return JsonResponse({"message":"ALREADY IN QUEUE"})
         except ObjectDoesNotExist:
-            if "www.youtube.com" in request.POST["YouTube URL"] or "youtu.be" in request.POST["YouTube URL"]:
-                url = request.POST["YouTube URL"]
+            if video_id(request.POST["YouTube URL"]):
+                url = f"https://www.youtube.com/watch?v={video_id(request.POST['YouTube URL'])}"
                 data = scrape_title(url)
                 if data==None:
                     return JsonResponse({"message": "INVALID URL"})
@@ -126,6 +123,10 @@ def songs_history(request):
     except:
         return render(request, 'history.html')
 
+@login_required(login_url='/accounts/login/')
+def account(request):
+    return render(request, 'account.html')
+
 @user_passes_test(lambda u: u.is_superuser)
 def next_song(request):
     try:
@@ -157,6 +158,12 @@ def song_delete(request, id):
     return HttpResponseRedirect('/dashboard')
 
 @user_passes_test(lambda u: u.is_superuser)
+def clear_queue(request):
+    if request.method == "POST":
+        song.objects.all().delete()
+        return JsonResponse({"message":"QUEUE CLEARED"})
+
+@user_passes_test(lambda u: u.is_superuser)
 def song_delete_from_history(request, id):
     song_that_is_ready_to_be_deleted = get_object_or_404(songs_play_history, id=id)
     if request.method == 'POST':
@@ -179,7 +186,6 @@ def add_song_to_blacklist(request, id):
 @user_passes_test(lambda u: u.is_superuser)
 def remove_from_blacklist(request, id): 
     if request.method == "POST":
-        print('fsd')
         songs_blacklist=db["songs_blacklist"]
         songs_blacklist.delete_one({"_id": ObjectId(id)})
         return JsonResponse({"message":"DELETED"})
@@ -196,3 +202,25 @@ def skip_vote(request, id):
         Song.skip_requests +=1
         Song.save()
         return JsonResponse({"message":"VOTED"})
+    elif request.method == "GET":
+        songs = song.objects.all()
+        return JsonResponse({"message": songs[0].skip_requests})
+    
+    
+def bug_report(request):
+    if request.method=="POST":
+        try:
+            bugs=db["bug_reports"]
+            user="UNDEFINED"
+            if request.user.is_authenticated:
+                user= request.user.email
+            bug={"user_email": user,
+                "description":request.POST["description"]}
+            bugs.insert_one(bug)
+            return JsonResponse({"message":"BUG REPORTED. THANKS!"})
+        except:
+            return JsonResponse({"message":"SOMETHING GONE WRONG. PLEASE TRY AGAIN."})
+        
+
+def change_user_data(request):
+    pass

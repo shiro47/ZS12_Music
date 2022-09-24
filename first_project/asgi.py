@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/4.0/howto/deployment/asgi/
 """
 
 import os
+import django
 
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter
@@ -19,6 +20,7 @@ from songrequestapp.routing import ws_urlpatterns
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'first_project.settings')
+django.setup()
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

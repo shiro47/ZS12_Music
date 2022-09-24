@@ -10,12 +10,14 @@ class WSConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         await self.send({"type": "websocket.accept",
                          })
+        await self.send({"type":"websocket.send",
+                         "text":0})
         
     async def websocket_receive(self, event):
         # when messages is received from websocket
         print("receive", event)
-        await self.send({"type": "websocket.send",
-                         "text":"e"})
+        await self.send({"type":"websocket.send",
+                         "text":0})
         print("Sended message.")
     
     async def websocket_disconnect(self, event):

@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<div id="snackbar" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;"></div>
-
     <body id="body-pd">
         <header class="header" id="header">
             <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
@@ -10,8 +8,8 @@
         <div class="l-navbar" id="nav-bar">
             <nav class="nav">
                 <div> 
-                    <a href="#" class="nav_logo"> <i class='bx bx-layer nav_logo-icon'></i> 
-                        <span class="nav_logo-name">BBBootstrap</span> 
+                    <a href="{% url "songrequestapp:index" %}" class="nav_logo"> <i class='bi bi-music-note-list nav_logo-icon'></i> 
+                        <span class="nav_logo-name">SONG REQUEST</span> 
                     </a>
                     <div class="nav_list"> 
                         {% if user.is_superuser %}
@@ -27,15 +25,25 @@
                             <a href="{% url "songrequestapp:songs_history" %}" class="nav_link"> 
                                 <i class='bx bx-history nav_icon'></i> <span class="nav_name">History</span> 
                             </a> 
-                            <a href="#" class="nav_link"> 
+                            <a href="{% url "songrequestapp:account" %}" class="nav_link"> 
                                 <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
                             </a>
-                            <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                            <a href="#" class="nav_link"> 
+                                <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                            </a> 
+                            <a href="#bug-report-modal" class="nav_link"> 
+                                <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
                             </a> 
                         {% else %}
                             <a href="{% url "songrequestapp:request_song" %}" class="nav_link active"> 
                                 <i class='bx bxs-music nav_icon'></i> <span class="nav_name">Song request</span>
                             </a>
+                            <a href="{% url "songrequestapp:account" %}" class="nav_link"> 
+                                <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
+                            </a>
+                            <a href="#bug-report-modal" class="nav_link"> 
+                                <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
+                            </a> 
                         {% endif %}
                     </div>
                 </div> 
@@ -44,7 +52,6 @@
                 </a>
             </nav>
         </div>
-        <div id="loader"></div>
     <div class="login">
         <form method="post" id="request-song">
             {% csrf_token %}
@@ -78,11 +85,11 @@
             {% for s,t in songs %}
             
                 {% if forloop.first %}
-                <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #092756;">
+                <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;">
                     <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-primary" aria-current="true">
                         <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
                     <div class="d-flex w-100 justify-content-between">
-                        <h5 class="mb-1">1. {{ s.song_title }}</h5>
+                        <h5 class="mb-1">#1. {{ s.song_title }}</h5>
                         <small style="margin: 3px">{{ s.song_duration }}</small>
                     </div>
                     <small style="color: green; font-weight: bold; ">Currently playing</small>
@@ -104,7 +111,7 @@
                 <a href="{{ s.song_url }}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action ">
                     <img src="{{ s.song_thumbnail}}" style="width:120px;height:90px;">
                 <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">{{ forloop.counter }}. {{ s.song_title }}</h5>
+                    <h5 class="mb-1">#{{ forloop.counter }}. {{ s.song_title }}</h5>
                     <small style="margin: 3px">{{ s.song_duration }}</small>
                 </div>
                 <small>Estimated start time: ≈{{ t }}</small>
@@ -149,6 +156,12 @@
 
 <script>
     var socket = new WebSocket('ws://localhost:8000/ws/some_url/');
+    socket.onopen =function(e){
+        console.log('open',e)
+        };
+    socket.onmessage=function(e){
+        console.log('message',e);
+    };
     function submit_skip_vote(id) {
         $.ajax({
             type: $('#skip_vote_'+id).attr('method'),
@@ -160,7 +173,7 @@
                },
             success: function (resp) {
                 socket.send("Skip vote sended.");
-                socket.close();
+
                 var x = document.getElementById("snackbar");
                 x.innerHTML = resp.message;
                 x.className = "show";
