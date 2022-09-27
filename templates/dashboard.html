@@ -46,11 +46,11 @@
     <h1 id="songs_status" style="visibility: visible; position:fixed; left: 50%; transform: translateX(-50%);">SONGS QUEUE IS EMPTY</h1>
 {% if songs %}
 {% if user.is_superuser %}
-<div id="song_player" class="card mb-3 gradient-border" style="max-width: 1060px; justify-content: center; margin: 0 auto; margin-top: 5px;">
+<div id="song_player" class="card mb-3 gradient-border" style="max-width: 95vh; justify-content: center; margin: 0 auto; margin-top: 5px;">
     <div class="row g-0">
       <div class="col-md-4">
         <div class="responsive-embed">
-            <iframe class="responsive-iframe" src="https://www.youtube.com/embed/{{ current_song_url }}?autoplay=1" allowfullscreen></iframe>
+            <iframe class="responsive-iframe" src="https://www.youtube.com/embed/{{ current_song_url }}" allowfullscreen></iframe>
         </div>
       </div>
       <div class="col-md-8">
@@ -142,71 +142,6 @@
 </script>
 {% endif %}
 
-<script>
-        function submit_delete(id) {
-            $.ajax({
-                type: $('#delete_form_'+id).attr('method'),
-                url: $('#delete_form_'+id).attr('action'),
-                data: $('#delete_form_'+id).serialize(),
-                beforeSend: function(){
-                    // Show image container
-                    document.getElementById("loader").style.display = "block";
-                   },
-                success: function (data) {
-                    $("#song_"+id).fadeOut("slow");
-                },
-                complete: function(){
-                    // Hide image container
-                    document.getElementById("loader").style.display = "none";
-                },   
-            });
-        }
-</script>
-<script>
-    function submit_song_to_blacklist(id) {
-        $.ajax({
-            type: $('#submit_form_to_blacklist'+id).attr('method'),
-            url: $('#submit_form_to_blacklist'+id).attr('action'),
-            data: $('#submit_form_to_blacklist'+id).serialize(),
-            beforeSend: function(){
-                // Show image container
-                document.getElementById("loader").style.display = "block";
-            },
-            success: function (data) {
-                $("#song_"+id).fadeOut("slow");
-            },
-            complete: function(){
-                // Hide image container
-                document.getElementById("loader").style.display = "none";
-            },    
-        });
-    }
-</script>
-<script>
-    function clear_queue() {
-        $.ajax({
-            type: "POST",
-            url: "{% url 'songrequestapp:clear_queue' %}",
-            data: { csrfmiddlewaretoken: "{{ csrf_token }}",
-            state:"inactive" 
-            },
-            beforeSend: function(){
-                // Show image container
-                document.getElementById("loader").style.display = "block";
-            },
-            success: function (data) {
-                $("#songs_queue").fadeOut("slow");
-                $("#song_player").fadeOut("slow");
-                $("#control_panel").fadeOut("slow");
-                document.getElementById("songs_status").style.visibility = "visible";
-            },
-            complete: function(){
-                // Hide image container
-                document.getElementById("loader").style.display = "none";
-            },    
-        });
-    }
-</script>
 {% comment %} <script>
     var wsStart='ws://'
     var endpoint=wsStart + window.location.host + "/ws/some_url/"

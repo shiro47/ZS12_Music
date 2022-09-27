@@ -1,14 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login
-from django.http import HttpResponseRedirect, JsonResponse
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.template.loader import render_to_string
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.models import User
+from django.core.mail import EmailMessage
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.urls import reverse
-from songrequestapp.forms import CustomUserCreationForm
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required, user_passes_test
 from pymongo import MongoClient
 from datetime import datetime
 from datetime import timedelta
-from .models import song, songs_play_history
+from .forms import SignupForm
+from .tokens import account_activation_token
+from .models import song, songs_play_history, songs_blacklist
 from .youtube_api import scrape_title, video_id, get_sec
 from bson.objectid import ObjectId
 from .consumers import WSConsumer
@@ -21,23 +28,48 @@ def index(request):
     return render(request, 'index.html', {})
 
 def register(request):
-    if request.method == "GET":
-        return render(
-            request, "registration/register.html",
-            {"form": CustomUserCreationForm}
-        )
-    elif request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect(reverse("index"))
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your blog account.'
+            message = render_to_string('registration/acc_active_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+                'token':account_activation_token.make_token(user),
+            })
+            to_email = form.cleaned_data.get('email')
+            email = EmailMessage(
+                        mail_subject, message, to=[to_email]
+            )
+            email.send()
+            return HttpResponse('Please confirm your email address to complete the registration')
+    else:
+        form = SignupForm()
+    return render(request, 'registration/register.html', {'form': form})
 
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        login(request, user)
+        # return redirect('home')
+        return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+    else:
+        return HttpResponse('Activation link is invalid!')
 
 @login_required(login_url='/accounts/login/')
 def request_song(request):
     if request.method == 'POST':
-        songs_blacklist=db["songs_blacklist"]
         try:
             if song.objects.get(song_url=request.POST["YouTube URL"]):
                 return JsonResponse({"message":"ALREADY IN QUEUE"})
@@ -47,17 +79,19 @@ def request_song(request):
                 data = scrape_title(url)
                 if data==None:
                     return JsonResponse({"message": "INVALID URL"})
-                if songs_blacklist.find_one({"url": url}) != None or songs_blacklist.find_one({"title": data[0]}) != None:
-                    return JsonResponse({"message": "SONG IS BLACKLISTED"})
-                Song = song()
-                Song.song_url = url
-                Song.song_title = data[0]
-                Song.song_duration = data[1]
-                Song.song_thumbnail = data[2]
-                Song.save()
-                return JsonResponse({"message": "SONG REQUESTED"})
-            else:
-                return JsonResponse({"message": "INVALID URL"})
+                try:
+                    if songs_blacklist.objects.get(song_url=url) or songs_blacklist.objects.get(song_title=data[0]):
+                        return JsonResponse({"message": "SONG IS BLACKLISTED"})
+                except songs_blacklist.DoesNotExist:
+                    Song = song()
+                    Song.song_url = url
+                    Song.song_title = data[0]
+                    Song.song_duration = data[1]
+                    Song.song_thumbnail = data[2]
+                    Song.save()
+                    return JsonResponse({"message": "SONG REQUESTED"})
+                else:
+                    return JsonResponse({"message": "INVALID URL"})
     try:
         songs= song.objects.all()
         current_time = datetime.now()
@@ -105,12 +139,8 @@ def dashboard(request):
         return render(request, 'dashboard.html')
 
 @user_passes_test(lambda u: u.is_superuser)
-def songs_blacklist(request):
-    songs_blacklist=db["songs_blacklist"]
-    songs=[]
-    for s in songs_blacklist.find():
-        songs.append(s)
-    dict={"songs":songs}
+def songs_blacklist_page(request):
+    dict={"songs":songs_blacklist.objects.all()}
     return render(request, "songs_blacklist.html", dict)
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -174,20 +204,26 @@ def song_delete_from_history(request, id):
 @user_passes_test(lambda u: u.is_superuser)
 def add_song_to_blacklist(request, id): 
     Song = get_object_or_404(song, id=id)
-    songs_blacklist=db["songs_blacklist"]
-    if songs_blacklist.find_one({"url": Song.song_url})==None or songs_blacklist.find_one({"title": Song.song_title})==None:
-        info={"url": Song.song_url, "title":Song.song_title, "duration":Song.song_duration, "thumbnail": Song.song_thumbnail}
-        songs_blacklist.insert_one(info)
+    try:
+        if songs_blacklist.objects.get(song_url=Song.song_url):
+            Song.delete()
+            return JsonResponse({"message":"SONG IS ALREADY IN BLACKLIST"})
+    except songs_blacklist.DoesNotExist:
+        song_to_add= songs_blacklist()
+        song_to_add.song_url = Song.song_url
+        song_to_add.song_title = Song.song_title
+        song_to_add.song_duration = Song.song_duration
+        song_to_add.song_thumbnail = Song.song_thumbnail
+        song_to_add.save()
         Song.delete()
-
-    return HttpResponseRedirect('/dashboard')
+        return HttpResponseRedirect('/dashboard')
 
 
 @user_passes_test(lambda u: u.is_superuser)
 def remove_from_blacklist(request, id): 
     if request.method == "POST":
-        songs_blacklist=db["songs_blacklist"]
-        songs_blacklist.delete_one({"_id": ObjectId(id)})
+        song_to_del=songs_blacklist.objects.get(id=id)
+        song_to_del.delete()
         return JsonResponse({"message":"DELETED"})
 
 @login_required(login_url='/accounts/login/')

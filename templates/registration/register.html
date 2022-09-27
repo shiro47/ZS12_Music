@@ -56,7 +56,7 @@
         {% csrf_token %}
         {% comment %} {{form}} {% endcomment %}
         <input type="text" name="username" placeholder="Username" required="required" />
-        <input type="email" name="email" placeholder="Email" required="required" />
+        <input type="email" name="email" placeholder="Email" pattern="[a-z.]*[@]\buczen.eduwarszawa.pl" oninvalid="this.setCustomValidity('You need to use uczen.eduwarszawa.pl domain!')" required="required"/>
         <input type="password" name="password1" placeholder="Password" required="required" />
         <input type="password" name="password2" placeholder="Password Confrimation" required="required" />
         <button type="submit" class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px; ">

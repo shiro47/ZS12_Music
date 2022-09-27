@@ -30,3 +30,17 @@ songrequestapp/migrations/__pycache__/0004_song_song_duration_song_song_thumbnai
 songrequestapp/migrations/__pycache__/0005_songs_play_history_song_skip_requests.cpython-310.pyc
 songrequestapp/templatetags/__pycache__/__init__.cpython-310.pyc
 songrequestapp/templatetags/__pycache__/templates.cpython-310.pyc
+first_project/__pycache__/__init__.cpython-39.pyc
+first_project/__pycache__/asgi.cpython-39.pyc
+first_project/__pycache__/urls.cpython-39.pyc
+songrequestapp/__pycache__/__init__.cpython-39.pyc
+songrequestapp/__pycache__/admin.cpython-39.pyc
+songrequestapp/__pycache__/apps.cpython-39.pyc
+songrequestapp/__pycache__/consumers.cpython-39.pyc
+songrequestapp/__pycache__/forms.cpython-39.pyc
+songrequestapp/__pycache__/models.cpython-39.pyc
+songrequestapp/__pycache__/routing.cpython-39.pyc
+songrequestapp/__pycache__/tokens.cpython-39.pyc
+songrequestapp/migrations/__pycache__/0005_songs_play_history_song_skip_requests.cpython-39.pyc
+songrequestapp/migrations/__pycache__/0006_songs_blacklist.cpython-39.pyc
+songrequestapp/.env

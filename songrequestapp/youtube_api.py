@@ -1,6 +1,10 @@
 from googleapiclient.discovery import build
 from urllib.parse import urlparse, parse_qs
 import time
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def video_id(value):
     """
@@ -27,7 +31,7 @@ def video_id(value):
 def scrape_title(url):
    try:
       youtube = build('youtube', 'v3',
-                      developerKey="AIzaSyA2m8CGKeNOE4OaPdgDQYZdlyCt-uasSFQ")
+                      developerKey=os.getenv('YOUTUBE_API'))
 
       video_request = youtube.videos().list(
           part='snippet,statistics, contentDetails',

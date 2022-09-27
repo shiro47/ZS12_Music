@@ -128,66 +128,13 @@
 
 {% endblock %}
 {% block scripts %}
-
-<script>
-    function submit_song() {
-        $.ajax({
-            type: $('#request-song').attr('method'),
-            url: $('#request-song').attr('action'),
-            data: $('#request-song').serialize(),
-            beforeSend: function(){
-                // Show image container
-                document.getElementById("loader").style.display = "block";
-               },
-            success: function (resp) {
-                var x = document.getElementById("snackbar");
-                x.innerHTML = resp.message;
-                x.className = "show";
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-            },   
-            complete: function(){
-                // Hide image container
-                document.getElementById("loader").style.display = "none";
-            },
-        });
-    }
-  
-</script>
-
-<script>
-    var socket = new WebSocket('ws://localhost:8000/ws/some_url/');
+    {% comment %} var socket = new WebSocket('ws://localhost:8000/ws/some_url/');
     socket.onopen =function(e){
         console.log('open',e)
         };
     socket.onmessage=function(e){
         console.log('message',e);
-    };
-    function submit_skip_vote(id) {
-        $.ajax({
-            type: $('#skip_vote_'+id).attr('method'),
-            url: $('#skip_vote_'+id).attr('action'),
-            data: $('#skip_vote_'+id).serialize(),
-            beforeSend: function(){
-                // Show image container
-                document.getElementById("loader").style.display = "block";
-               },
-            success: function (resp) {
-                socket.send("Skip vote sended.");
+    }; {% endcomment %}
 
-                var x = document.getElementById("snackbar");
-                x.innerHTML = resp.message;
-                x.className = "show";
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-                
-            },   
-            complete: function(){
-                // Hide image container
-                document.getElementById("loader").style.display = "none";
-            },
-        });
-    }
-</script>
+
 {% endblock scripts %}
-{% comment %} function (){
-    
-}; {% endcomment %}

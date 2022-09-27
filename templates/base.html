@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
   <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
+  <script src="{% static 'js/main.js' %}"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
 
   <title>{% block title %}Song Request{% endblock %}</title>
   
@@ -43,69 +45,5 @@
   <script src="https://cdn.rawgit.com/labnol/files/master/yt.js"></script> {% endcomment %}
   {% block scripts %}
   {% endblock scripts %}
-  <script>
-    function submit_bug() {
-      $.ajax({
-          type: $('#report_bug_form').attr('method'),
-          url: $('#report_bug_form').attr('action'),
-          data: $('#report_bug_form').serialize(),
-          beforeSend: function(){
-              // Show image container
-              document.getElementById("loader").style.display = "block";
-             },
-          success: function (resp) {
-              var x = document.getElementById("snackbar");
-              x.innerHTML = resp.message;
-              x.className = "show";
-              setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-          },   
-          complete: function(){
-              // Hide image container
-              document.getElementById("loader").style.display = "none";
-          },
-      });
-  }
-  </script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function(event) {
-   
-      const showNavbar = (toggleId, navId, bodyId, headerId) =>{
-      const toggle = document.getElementById(toggleId),
-      nav = document.getElementById(navId),
-      bodypd = document.getElementById(bodyId),
-      headerpd = document.getElementById(headerId)
-      
-      // Validate that all variables exist
-      if(toggle && nav && bodypd && headerpd){
-      toggle.addEventListener('click', ()=>{
-      // show navbar
-      nav.classList.toggle('show')
-      // change icon
-      toggle.classList.toggle('bx-x')
-      // add padding to body
-      bodypd.classList.toggle('body-pd')
-      // add padding to header
-      headerpd.classList.toggle('body-pd')
-      })
-      }
-      }
-      
-      showNavbar('header-toggle','nav-bar','body-pd','header')
-      
-      /*===== LINK ACTIVE =====*/
-      const linkColor = document.querySelectorAll('.nav_link')
-      
-      function colorLink(){
-      if(linkColor){
-      linkColor.forEach(l=> l.classList.remove('active'))
-      this.classList.add('active')
-      }
-      }
-      linkColor.forEach(l=> l.addEventListener('click', colorLink))
-      
-       // Your code to run since DOM is loaded and ready
-      });
-  </script>
-  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
 </body>
 </html>

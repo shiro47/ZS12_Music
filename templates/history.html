@@ -68,7 +68,7 @@
             <form action="{% url 'songrequestapp:request_song'  %}" method="post" id="request-song-{{ s.id }}" style="display:inline-block;">
                 {% csrf_token %}
                 <input type="hidden" name="YouTube URL" value="{{ s.song_url }}"></input>
-                <button type="button" onclick="submit_song({{ s.id }})" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">REQUEST
+                <button type="button" onclick="submit_song_from_history({{ s.id }})" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">REQUEST
                     <span></span>
                     <span></span>
                     <span></span>
@@ -86,47 +86,4 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<script>
-        function submit_delete_from_history(id) {
-            $.ajax({
-                type: $('#delete_form_'+id).attr('method'),
-                url: $('#delete_form_'+id).attr('action'),
-                data: $('#delete_form_'+id).serialize(),
-                beforeSend: function(){
-                    // Show image container
-                    document.getElementById("loader").style.display = "block";
-                   },
-                success: function (resp) {
-                    $("#song_"+id).fadeOut("slow");
-                },
-                complete: function(){
-                    // Hide image container
-                    document.getElementById("loader").style.display = "none";
-                },   
-            });
-        }
-</script>
-<script>
-    function submit_song(id) {
-        $.ajax({
-            type: $('#request-song-'+id).attr('method'),
-            url: $('#request-song-'+id).attr('action'),
-            data: $('#request-song-'+id).serialize(),
-            beforeSend: function(){
-                // Show image container
-                document.getElementById("loader").style.display = "block";
-               },
-            success: function (resp) {
-                var x = document.getElementById("snackbar");
-                x.innerHTML = resp.message;
-                x.className = "show";
-                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-            },
-            complete: function(){
-                // Hide image container
-                document.getElementById("loader").style.display = "none";
-            },
-        });
-    }
-</script>
 {% endblock scripts %}
