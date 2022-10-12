@@ -44,3 +44,7 @@ songrequestapp/__pycache__/tokens.cpython-39.pyc
 songrequestapp/migrations/__pycache__/0005_songs_play_history_song_skip_requests.cpython-39.pyc
 songrequestapp/migrations/__pycache__/0006_songs_blacklist.cpython-39.pyc
 songrequestapp/.env
+songrequestapp/__pycache__/tests.cpython-39.pyc
+songrequestapp/templatetags/__pycache__/templates.cpython-39.pyc
+songrequestapp/templatetags/__pycache__/templates.cpython-39.pyc
+.coverage

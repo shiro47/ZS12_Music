@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load templates %}
 {% block content %}
 <body id="body-pd">
     <header class="header" id="header">
@@ -68,28 +69,54 @@
                             </div>
                             <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
                                 <div class="form-group">
-                                    <label >Name</label>
-                                    <input type="text" class="form-control" value="{{user.username}}" id="fullName" placeholder="Enter full name">
+                                    <label >Username</label>
+                                    <input type="text" class="form-control" value="{{user.username}}" id="username" placeholder="Enter full name">
                                 </div>
+                            </div>
+                            <div class="text-right">
+                                <button type="button" id="submit" name="submit" onclick="username_change()" class="btn" style="padding: 10px 30px;  margin: 10px; width:98%;">Update
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </button>
                             </div>
                             <h4 class="mb-3 text-primary" style="margin-top: 15px;">Change Password</h4>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label >Password</label>
-                                    <input type="password" class="form-control" id="phone" placeholder="New password">
+                            <form method="post" action="{% url 'songrequestapp:change_password' %}" id="password_change_form">
+                                {% csrf_token %}
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label style="white-space: nowrap;">Old password</label>
+                                        {{ form.old_password|addcss:'form-control' }}
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label style="white-space: nowrap;">New password</label>
+                                        {{ form.new_password1|addcss:'form-control' }}
+                                    </div>
+                                </div>
+                                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+                                    <div class="form-group">
+                                        <label style="white-space: nowrap;">Password Confrimation</label>
+                                        {{ form.new_password2|addcss:'form-control' }}
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label style="white-space: nowrap;">Password Confrimation</label>
-                                    <input type="password" class="form-control" id="website" placeholder="Password Confrimation">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row gutters">
-                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                                <div class="text-right">
-                                    <button type="button" id="submit" name="submit" class="btn" style="padding: 10px 30px;  margin: 10px; width:98%;">Update
+                            <div class="row gutters">
+                                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+                                    <div class="text-right" id="alerts">
+                                        {% if form.errors %}
+                                        {% for field in form %}
+                                            {% for error in field.errors %} 
+                                                <div class="alert alert-danger">
+                                                    <strong>{{ error|escape }}</strong>
+                                                </div>
+                                            {% endfor %}
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" id="submit" onclick="password_change()" name="submit" class="btn" style="padding: 10px 30px;  margin: 10px; width:98%;">Update
                                         <span></span>
                                         <span></span>
                                         <span></span>
@@ -97,13 +124,79 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
         </div>
+
 {% endblock %}
 {% block scripts %}
-
+<script>
+    function password_change() {
+        $.ajax({
+            type: $('#password_change_form').attr('method'),
+            url: $("#password_change_form").attr('action'),
+            data: $("#password_change_form").serialize(),
+            beforeSend: function(){
+                // Show image container
+                document.getElementById("loader").style.display = "block";
+            },
+            success: function (resp) {
+                $('#alerts').empty();
+                var x = document.getElementById("snackbar");
+                if (resp.message == "PASSWORD CHANGED!"){
+                x.innerHTML = resp.message;
+                x.className = "show";
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);} 
+                else {
+                    const array = resp.message;
+                    array.forEach(function (item, index) {
+                        var output = "<div class='alert alert-danger'>"+item+"<strong></strong></div>";
+                        $("#alerts").append(output);
+                    });
+                }
+            },   
+            complete: function(){
+                // Hide image container
+                document.getElementById("loader").style.display = "none";
+            },
+        });
+    }
+</script>
+<script>
+    var current_username = $('#username').val()
+    function username_change() {
+        if (current_username == $('#username').val()){
+            var x = document.getElementById("snackbar");
+            x.innerHTML = "CHANGE USERNAME FIRST";
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+            return
+        }
+        $.ajax({
+            type: "POST",
+            url: "{% url 'songrequestapp:change_username' %}",
+            data: { csrfmiddlewaretoken: "{{ csrf_token }}",
+                    state:"inactive",
+                    data: $('#username').val()},
+            beforeSend: function(){
+                // Show image container
+                document.getElementById("loader").style.display = "block";
+            },
+            success: function (resp) {
+                var x = document.getElementById("snackbar");
+                x.innerHTML = resp.message;
+                x.className = "show";
+                setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+                current_username = $('#username').val()
+            },   
+            complete: function(){
+                // Hide image container
+                document.getElementById("loader").style.display = "none";
+            },
+        });
+    }
+</script>
 {% endblock scripts %}

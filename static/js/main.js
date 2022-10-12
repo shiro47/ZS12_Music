@@ -82,30 +82,6 @@ function submit_delete(id) {
     });
 }
 
-function clear_queue() {
-    $.ajax({
-        type: "POST",
-        url: "{% url 'songrequestapp:clear_queue' %}",
-        data: { csrfmiddlewaretoken: "{{ csrf_token }}",
-        state:"inactive" 
-        },
-        beforeSend: function(){
-            // Show image container
-            document.getElementById("loader").style.display = "block";
-        },
-        success: function (data) {
-            $("#songs_queue").fadeOut("slow");
-            $("#song_player").fadeOut("slow");
-            $("#control_panel").fadeOut("slow");
-            document.getElementById("songs_status").style.visibility = "visible";
-        },
-        complete: function(){
-            // Hide image container
-            document.getElementById("loader").style.display = "none";
-        },    
-    });
-}
-
 function submit_song_to_blacklist(id) {
     $.ajax({
         type: $('#submit_form_to_blacklist'+id).attr('method'),

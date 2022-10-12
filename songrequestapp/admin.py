@@ -4,7 +4,7 @@ from .models  import  song
 
 # Register your models here.
 
-class  songAdmin(AdminVideoMixin, admin.ModelAdmin):
+class songAdmin(AdminVideoMixin, admin.ModelAdmin):
 	pass
 
 admin.site.register(song, songAdmin)

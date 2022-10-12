@@ -3,7 +3,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.template.loader import render_to_string
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
@@ -17,6 +17,7 @@ from .forms import SignupForm
 from .tokens import account_activation_token
 from .models import song, songs_play_history, songs_blacklist
 from .youtube_api import scrape_title, video_id, get_sec
+from django.contrib.auth.forms import PasswordChangeForm
 from bson.objectid import ObjectId
 from .consumers import WSConsumer
 # Create your views here.
@@ -30,7 +31,7 @@ def index(request):
 def register(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.cleaned_data.get('email').endswith("@uczen.eduwarszawa.pl"):
             user = form.save(commit=False)
             user.is_active = False
             user.save()
@@ -155,7 +156,33 @@ def songs_history(request):
 
 @login_required(login_url='/accounts/login/')
 def account(request):
-    return render(request, 'account.html')
+    form = PasswordChangeForm(request.user)
+    return render(request, 'account.html',{'form': form})
+
+@login_required(login_url='/accounts/login/')
+def change_username(request):
+    if request.method == "POST":
+        if User.objects.filter(username=request.POST["data"]).exists():
+            return JsonResponse({"message":"USERNAME IS TAKEN. TRY ANOTHER ONE!"})
+        user = User.objects.get(username = request.user.username)
+        user.username = request.POST["data"]
+        user.save()
+        return JsonResponse({"message":"USERNAME CHANGED!"})
+    
+@login_required(login_url='/accounts/login/')
+def change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            return JsonResponse({"message":"PASSWORD CHANGED!"})
+        else:
+            errors=[]
+            for field in form:
+                for error in field.errors:
+                    errors.append(error)
+            return JsonResponse({"message":errors})
 
 @user_passes_test(lambda u: u.is_superuser)
 def next_song(request):
@@ -257,6 +284,3 @@ def bug_report(request):
         except:
             return JsonResponse({"message":"SOMETHING GONE WRONG. PLEASE TRY AGAIN."})
         
-
-def change_user_data(request):
-    pass
