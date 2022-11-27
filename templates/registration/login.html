@@ -55,11 +55,21 @@
 
 <div class="login">
   <h1>Login</h1>
+    
     <form method="post">
-      {% csrf_token %}
-      <input type="text" name="username" placeholder="Username" required="required" />
-        <input type="password" name="password" placeholder="Password" required="required" />
-        <button type="submit" class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px; ">
+        {% csrf_token %}
+        {{ form.username.label_tag }}
+        {{ form.username }}
+        {{ form.password.label_tag }}
+        {{ form.password }}
+        <div class="text-right" id="alerts">
+          {% if form.errors %}
+            <div class="alert alert-danger">
+              <strong>Your username and password didn't match. Please try again.</strong>
+            </div>
+          {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px; margin-top: 5px;">
           <span></span>
           <span></span>
           <span></span>
@@ -68,7 +78,7 @@
         </button>
     </form>
   <a href="{% url 'songrequestapp:register' %}">
-    <button class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px; ">
+    <button class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px;">
       <span></span>
       <span></span>
       <span></span>

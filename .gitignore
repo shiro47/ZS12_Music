@@ -48,3 +48,4 @@ songrequestapp/__pycache__/tests.cpython-39.pyc
 songrequestapp/templatetags/__pycache__/templates.cpython-39.pyc
 songrequestapp/templatetags/__pycache__/templates.cpython-39.pyc
 .coverage
+.vscode/settings.json
