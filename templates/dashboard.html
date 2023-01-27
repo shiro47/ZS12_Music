@@ -30,9 +30,9 @@
                     <a href="{% url "songrequestapp:account" %}" class="nav_link"> 
                         <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
                     </a>
-                    <a href="#" class="nav_link"> 
+                    {% comment %} <a href="#" class="nav_link"> 
                         <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
-                    </a> 
+                    </a>  {% endcomment %}
                     <a href="#bug-report-modal" class="nav_link"> 
                         <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
                     </a> 
@@ -59,19 +59,11 @@
           <p class="card-text" style="justify-content: center; align-items: center; display: flex;">
             <a href="{% url "songrequestapp:next_song" %}" style="display:inline-block;">
                 <button class="btn" style="padding: 10px 30px; max-width: 200px; margin: 0 auto;">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
                     Next song
                 </button>
             </a>
             <a href="{% url 'songrequestapp:add_to_blacklist' current_song_id  %}" style="display:inline-block;">
                 <button class="btn" style="padding: 10px 30px; max-width: 280px; margin: 0 auto; margin-left: 20px; ">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
                     Add to blacklist
                 </button>
             </a>
@@ -83,10 +75,6 @@
 </div>
         <div id="control_panel" style="margin-left: 2%; margin-right:2%; border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;">
             <button class="btn" onclick="clear_queue()" style="padding: 10px 30px; max-width: 280px; margin: 5px;">CLEAR QUEUE
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
             </button>
         </div>
         <div class="list-group" id="songs_queue">
@@ -102,25 +90,17 @@
                     <small>{{ s.song_duration }}</small>
                 </div>
                 <p  class="mb-1">{{ s.song_url }}</p>
-                <small>Estimated start time: ≈{{ t }}</small>
+                {% comment %} <small>Estimated start time: ≈{{ t }}</small> {% endcomment %}
                 </a>
                 <small style="">
-                    <form action="{% url 'songrequestapp:delete' s.id  %}"  method="post" id="delete_form_{{ s.id }}" style="display:inline-block;">
+                    <form id="delete_form_{{ s.id }}" style="display:inline-block;">
                         {% csrf_token %}
                         <button type="button" onclick="submit_delete({{ s.id }})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">DELETE
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                            <span></span>
                         </button>
                     </form>
-                    <form action="{% url 'songrequestapp:add_to_blacklist' s.id  %}"  method="post" id="submit_form_to_blacklist{{ s.id }}" style="display:inline-block;">
+                    <form id="submit_form_to_blacklist{{ s.id }}" style="display:inline-block;">
                         {% csrf_token %}
                         <button type="button" onclick="submit_song_to_blacklist({{ s.id }})" value="delete" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">ADD TO BLACKLIST
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                            <span></span>
                         </button>
                     </form>
                 </small>
@@ -166,21 +146,94 @@
         });
     }
 </script>
-{% comment %} <script>
-    var wsStart='ws://'
-    var endpoint=wsStart + window.location.host + "/ws/some_url/"
-    var socket = new WebSocket(endpoint);
-    console.log(endpoint);
-    console.log("connected");
-    socket.onopen =function(e){
-        console.log('open',e)
+<script>
+function submit_delete(id) {
+    $.ajax({
+        type: "POST",
+        url: "{% url 'songrequestapp:delete' 1  %}".replace("1", id),
+        data: { csrfmiddlewaretoken: "{{ csrf_token }}",
+            state:"inactive" 
+            },
+        beforeSend: function(){
+            // Show image container
+            document.getElementById("loader").style.display = "block";
+           },
+        success: function (data) {
+            $("#song_"+id).fadeOut("slow");
+        },
+        complete: function(){
+            // Hide image container
+            document.getElementById("loader").style.display = "none";
+        },   
+    });
+}
+</script>
+<script>
+function submit_song_to_blacklist(id) {
+    $.ajax({
+        type: "POST",
+        url: "{% url 'songrequestapp:add_to_blacklist' 1  %}".replace("1", id),
+        data: { csrfmiddlewaretoken: "{{ csrf_token }}",
+            state:"inactive" 
+            },
+        beforeSend: function(){
+            // Show image container
+            document.getElementById("loader").style.display = "block";
+        },
+        success: function (data) {
+            $("#song_"+id).fadeOut("slow");
+        },
+        complete: function(){
+            // Hide image container
+            document.getElementById("loader").style.display = "none";
+        },    
+    });
+}
+</script>
+<script>
+    let socket = null;
+    function connect() {
+        socket = new WebSocket("ws://" + window.location.host + "/ws/some_url");
+
+        socket.onopen = function(e) {
+            console.log("Successfully connected to the WebSocket.");
+        }
+    
+        socket.onclose = function(e) {
+            console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
+            setTimeout(function() {
+                console.log("Reconnecting...");
+                connect();
+            }, 2000);
         };
-    socket.onmessage=function(e){
-        console.log('message',e)
+    
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data);
+    
+            switch (data.type) {
+                case "new_song":
+                    var output= `<div class="list-item" id="song_${data.id}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;"><a href="${data.song_url}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action "><img src="${data.song_thumbnail}" style="width:120px;height:90px;"><div class="d-flex w-100 justify-content-between"><h5 class="mb-1">#${data.position}. ${data.song_title}</h5><small>${data.song_duration}</small></div><p  class="mb-1">${data.song_url}</p></a><small style=""><form style="display:inline-block;"><button type="button" onclick="submit_delete2(${data.id})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">DELETE</button></form><form style="display:inline-block;"><button type="button" onclick="submit_song_to_blacklist2(${data.id})" value="delete" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">ADD TO BLACKLIST</button></form></small></div>`;
+                    $("#songs_queue").append(output).fadeIn("slow");
+                    break;
+                case "skip_vote":
+                    get_skip_votes()
+                default:
+                    console.error("Unknown message type!");
+                    break;
+            }
+        };
+    
+        socket.onerror = function(err) {
+            console.log("WebSocket encountered an error: " + err.message);
+            console.log("Closing the socket.");
+            socket.close();
+        }
     }
-</script> {% endcomment %}
-{% comment %} <script>
-    setInterval(function get_skip_votes() {
+    connect();
+</script>
+<script>
+function get_skip_votes() {
         $.ajax({
             type: "GET",
             url: "{% url 'songrequestapp:skip_vote' 0 %}",
@@ -188,6 +241,6 @@
                 document.getElementById("skip_requests").innerHTML ="Skip requests: "+data.message;
             },
         });
-    }, 10000);
-</script> {% endcomment %}
+    };
+</script>
 {% endblock scripts %}

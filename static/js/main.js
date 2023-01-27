@@ -63,43 +63,43 @@ function submit_bug() {
     });
 }
 
-function submit_delete(id) {
-    $.ajax({
-        type: $('#delete_form_'+id).attr('method'),
-        url: $('#delete_form_'+id).attr('action'),
-        data: $('#delete_form_'+id).serialize(),
-        beforeSend: function(){
-            // Show image container
-            document.getElementById("loader").style.display = "block";
-           },
-        success: function (data) {
-            $("#song_"+id).fadeOut("slow");
-        },
-        complete: function(){
-            // Hide image container
-            document.getElementById("loader").style.display = "none";
-        },   
-    });
-}
+// function submit_delete(id) {
+//     $.ajax({
+//         type: $('#delete_form_'+id).attr('method'),
+//         url: $('#delete_form_'+id).attr('action'),
+//         data: $('#delete_form_'+id).serialize(),
+//         beforeSend: function(){
+//             // Show image container
+//             document.getElementById("loader").style.display = "block";
+//            },
+//         success: function (data) {
+//             $("#song_"+id).fadeOut("slow");
+//         },
+//         complete: function(){
+//             // Hide image container
+//             document.getElementById("loader").style.display = "none";
+//         },   
+//     });
+// }
 
-function submit_song_to_blacklist(id) {
-    $.ajax({
-        type: $('#submit_form_to_blacklist'+id).attr('method'),
-        url: $('#submit_form_to_blacklist'+id).attr('action'),
-        data: $('#submit_form_to_blacklist'+id).serialize(),
-        beforeSend: function(){
-            // Show image container
-            document.getElementById("loader").style.display = "block";
-        },
-        success: function (data) {
-            $("#song_"+id).fadeOut("slow");
-        },
-        complete: function(){
-            // Hide image container
-            document.getElementById("loader").style.display = "none";
-        },    
-    });
-}
+// function submit_song_to_blacklist(id) {
+//     $.ajax({
+//         type: $('#submit_form_to_blacklist'+id).attr('method'),
+//         url: $('#submit_form_to_blacklist'+id).attr('action'),
+//         data: $('#submit_form_to_blacklist'+id).serialize(),
+//         beforeSend: function(){
+//             // Show image container
+//             document.getElementById("loader").style.display = "block";
+//         },
+//         success: function (data) {
+//             $("#song_"+id).fadeOut("slow");
+//         },
+//         complete: function(){
+//             // Hide image container
+//             document.getElementById("loader").style.display = "none";
+//         },    
+//     });
+// }
 
 function submit_song_from_history(id) {
     $.ajax({
@@ -142,27 +142,7 @@ function submit_delete_from_history(id) {
     });
 }
 
-function submit_song() {
-    $.ajax({
-        type: $('#request-song').attr('method'),
-        url: $('#request-song').attr('action'),
-        data: $('#request-song').serialize(),
-        beforeSend: function(){
-            // Show image container
-            document.getElementById("loader").style.display = "block";
-           },
-        success: function (resp) {
-            var x = document.getElementById("snackbar");
-            x.innerHTML = resp.message;
-            x.className = "show";
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-        },   
-        complete: function(){
-            // Hide image container
-            document.getElementById("loader").style.display = "none";
-        },
-    });
-}
+
 
 function submit_skip_vote(id) {
     $.ajax({

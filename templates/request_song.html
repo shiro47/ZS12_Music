@@ -28,9 +28,9 @@
                             <a href="{% url "songrequestapp:account" %}" class="nav_link"> 
                                 <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
                             </a>
-                            <a href="#" class="nav_link"> 
+                            {% comment %} <a href="#" class="nav_link"> 
                                 <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
-                            </a> 
+                            </a>  {% endcomment %}
                             <a href="#bug-report-modal" class="nav_link"> 
                                 <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
                             </a> 
@@ -58,20 +58,12 @@
             <h1>Send your song request!</h1>
             <input type="text" name="YouTube URL" placeholder="YouTube URL" required="required" id="url"></input>
             <button id="send_button" type="button" onclick="submit_song()" class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px; ">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
                 SEND!
             </button>
             
         </form>
         <a href="#demo-modal">
             <button class="btn btn-primary btn-block btn-large" style="padding: 10px 30px; margin-bottom: 10px;">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
                 SONGS QUEUE
             </button>
         </a>    
@@ -98,10 +90,6 @@
                         <form action="{% url 'songrequestapp:skip_vote' s.id  %}"  method="post" id="skip_vote_{{ s.id }}" style="display:inline-block;">
                             {% csrf_token %}
                             <button type="button" onclick="submit_skip_vote({{ s.id }})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">VOTE SKIP
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                                <span></span>
                             </button>
                         </form>
                     </small>
@@ -114,7 +102,7 @@
                     <h5 class="mb-1">#{{ forloop.counter }}. {{ s.song_title }}</h5>
                     <small style="margin: 3px">{{ s.song_duration }}</small>
                 </div>
-                <small>Estimated start time: ≈{{ t }}</small>
+                {% comment %} <small>Estimated start time: ≈{{ t }}</small> {% endcomment %}
                 </a>
                 
             </div>
@@ -128,13 +116,58 @@
 
 {% endblock %}
 {% block scripts %}
-    {% comment %} var socket = new WebSocket('ws://localhost:8000/ws/some_url/');
-    socket.onopen =function(e){
-        console.log('open',e)
+<script>
+    let socket = null;
+    function connect() {
+        socket = new WebSocket("ws://" + window.location.host + "/ws/some_url");
+
+        socket.onopen = function(e) {
+            console.log("Successfully connected to the WebSocket.");
+        }
+    
+        socket.onclose = function(e) {
+            console.log("WebSocket connection closed unexpectedly. Trying to reconnect in 2s...");
+            setTimeout(function() {
+                console.log("Reconnecting...");
+                connect();
+            }, 2000);
         };
-    socket.onmessage=function(e){
-        console.log('message',e);
-    }; {% endcomment %}
-
-
+    
+        socket.onerror = function(err) {
+            console.log("WebSocket encountered an error: " + err.message);
+            console.log("Closing the socket.");
+            socket.close();
+        }
+    }
+    connect();
+</script>
+<script>
+function submit_song(){ 
+    if (socket.readyState==WebSocket.OPEN){
+    $.ajax({
+        type: $('#request-song').attr('method'),
+        url: $('#request-song').attr('action'),
+        data: $('#request-song').serialize(),
+        beforeSend: function(){
+            // Show image container
+            document.getElementById("loader").style.display = "block";
+           },
+        success: function (resp) {
+            var x = document.getElementById("snackbar");
+            x.innerHTML = resp.message;
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        },   
+        complete: function(){
+            // Hide image container
+            document.getElementById("loader").style.display = "none";
+        },
+    });}else{
+            var x = document.getElementById("snackbar");
+            x.innerHTML = "ERROR. REFRESH YOUR PAGE PLEASE!";
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        };
+}
+</script>
 {% endblock scripts %}

@@ -4,10 +4,10 @@ from . import views
 app_name = "songrequestapp"
 
 urlpatterns = [
+    # path("register/",views.register,name='register'),
+    # path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
+    #     views.activate, name='activate'),
     path('',views.index,name='index'),
-    path("register/",views.register,name='register'),
-    path(r'^activate/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
-        views.activate, name='activate'),
     path("dashboard",views.dashboard,name='dashboard'),
     path("account", views.account, name="account"),
     path("account/change_username", views.change_username, name="change_username"),

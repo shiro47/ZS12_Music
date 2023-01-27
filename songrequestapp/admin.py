@@ -1,10 +1,8 @@
 from django.contrib import admin
-from  embed_video.admin  import  AdminVideoMixin
-from .models  import  song
+from .models  import  song, songs_blacklist, songs_play_history
 
 # Register your models here.
 
-class songAdmin(AdminVideoMixin, admin.ModelAdmin):
-	pass
-
-admin.site.register(song, songAdmin)
+admin.site.register(song)
+admin.site.register(songs_blacklist)
+admin.site.register(songs_play_history)

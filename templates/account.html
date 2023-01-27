@@ -28,8 +28,8 @@
                     <a href="{% url "songrequestapp:account" %}" class="nav_link active"> 
                         <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
                     </a>
-                    <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
-                    </a> 
+                    {% comment %} <a href="#" class="nav_link"> <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
+                    </a>  {% endcomment %}
                     <a href="#bug-report-modal" class="nav_link"> 
                         <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
                     </a> 
@@ -75,10 +75,6 @@
                             </div>
                             <div class="text-right">
                                 <button type="button" id="submit" name="submit" onclick="username_change()" class="btn" style="padding: 10px 30px;  margin: 10px; width:98%;">Update
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
                                 </button>
                             </div>
                             <h4 class="mb-3 text-primary" style="margin-top: 15px;">Change Password</h4>
@@ -117,10 +113,6 @@
                                         {% endif %}
                                     </div>
                                     <button type="button" id="submit" onclick="password_change()" name="submit" class="btn" style="padding: 10px 30px;  margin: 10px; width:98%;">Update
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
-                                        <span></span>
                                     </button>
                                 </div>
                             </div>

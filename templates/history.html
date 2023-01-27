@@ -27,9 +27,9 @@
                         <a href="{% url "songrequestapp:account" %}" class="nav_link"> 
                             <i class='bx bx-user nav_icon'></i> <span class="nav_name">Account</span> 
                         </a> 
-                        <a href="#" class="nav_link"> 
+                        {% comment %} <a href="#" class="nav_link"> 
                             <i class='bx bx-bar-chart-alt-2 nav_icon'></i> <span class="nav_name">Stats</span> 
-                        </a> 
+                        </a>  {% endcomment %}
                         <a href="#bug-report-modal" class="nav_link"> 
                             <i class="bi bi-bug nav_icon"></i> <span class="nav_name">Report bug</span> 
                         </a> 
@@ -59,20 +59,12 @@
             <form action="{% url 'songrequestapp:delete_from_history' s.id  %}"  method="post" id="delete_form_{{ s.id }}" style="display:inline-block;">
                 {% csrf_token %}
                 <button type="button" onclick="submit_delete_from_history({{ s.id }})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">DELETE
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
                 </button>
             </form>
             <form action="{% url 'songrequestapp:request_song'  %}" method="post" id="request-song-{{ s.id }}" style="display:inline-block;">
                 {% csrf_token %}
                 <input type="hidden" name="YouTube URL" value="{{ s.song_url }}"></input>
                 <button type="button" onclick="submit_song_from_history({{ s.id }})" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">REQUEST
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                    <span></span>
                 </button>
             </form>
         </small>

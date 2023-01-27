@@ -20,7 +20,7 @@ from songrequestapp.routing import ws_urlpatterns
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'first_project.settings')
-django.setup()
+
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),

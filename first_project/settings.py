@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'livereload',
     'songrequestapp',
     'embed_video',
@@ -76,6 +77,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'first_project.wsgi.application'
 ASGI_APPLICATION = 'first_project.asgi.application'
 
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
