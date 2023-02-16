@@ -74,3 +74,9 @@ songrequestapp/migrations/__pycache__/0005_songs_play_history_song_skip_requests
 songrequestapp/migrations/__pycache__/0006_songs_blacklist.cpython-311.pyc
 songrequestapp/templatetags/__pycache__/__init__.cpython-311.pyc
 songrequestapp/templatetags/__pycache__/templates.cpython-311.pyc
+songrequestapp/__pycache__/BackgroundTasks.cpython-311.pyc
+songrequestapp/__pycache__/configfile.cpython-311.pyc
+songrequestapp/migrations/__pycache__/0007_user_status.cpython-311.pyc
+songrequestapp/migrations/__pycache__/0008_rename_user_status_profile.cpython-311.pyc
+songrequestapp/migrations/__pycache__/0009_bug_report.cpython-311.pyc
+

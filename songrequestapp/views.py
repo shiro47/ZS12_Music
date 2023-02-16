@@ -10,25 +10,24 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required, user_passes_test
-from pymongo import MongoClient
-from datetime import datetime
-from datetime import timedelta
 from .forms import SignupForm
 from .tokens import account_activation_token
 from .models import song, songs_play_history, songs_blacklist
+from .models import bug_report as bug_reportt
 from .youtube_api import scrape_title, video_id, get_sec
 from django.contrib.auth.forms import PasswordChangeForm
 from bson.objectid import ObjectId
-from .consumers import WSConsumer
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 import json
+from .ConfigFile import SR_config
+from .BackgroundTasks import users_ids
+from django_ratelimit.decorators import ratelimit
 # Create your views here.
 
-client = MongoClient("mongodb+srv://shiro_47:cJOKjP8VgVrl0M7l@song-request.la9qn.mongodb.net/?retryWrites=true&w=majority")
-db = client['song-request']
-channel_layer = get_channel_layer()
 
+channel_layer = get_channel_layer()
+skip_votes=[]
 
 
 #   ____  _____ ____ ___ ____ _____ _____ ____  
@@ -89,6 +88,11 @@ def request_song(request):
             if song.objects.get(song_url=f"https://www.youtube.com/watch?v={video_id(request.POST['YouTube URL'])}"):
                 return JsonResponse({"message":"ALREADY IN QUEUE"})
         except ObjectDoesNotExist:
+            user = User.objects.get(pk = request.user.pk)
+            if user.profile.requests>=int(SR_config().check_requests_limit()):
+                if not int(request.user.pk) in users_ids:
+                    users_ids.append(request.user.pk)
+                return JsonResponse({"message": "YOUR REQUEST LIMIT REACHED!"})
             if video_id(request.POST["YouTube URL"]):
                 url = f"https://www.youtube.com/watch?v={video_id(request.POST['YouTube URL'])}"
                 data = scrape_title(url)
@@ -104,6 +108,10 @@ def request_song(request):
                     Song.song_duration = data[1]
                     Song.song_thumbnail = data[2]
                     Song.save()
+                    user.profile.requests+=1
+                    user.save()
+                    if not int(request.user.pk) in users_ids:
+                        users_ids.append(request.user.pk)
                     async_to_sync(channel_layer.group_send)(
             "ZS12",
             {
@@ -120,21 +128,7 @@ def request_song(request):
             else:
                 return JsonResponse({"message": "INVALID URL"})
     try:
-        songs= song.objects.all()
-        current_time = datetime.now()
-        sec=0
-        songs_play_times=[]
-        for x in songs:
-            if x==songs[0]:
-                songs_play_times.append(current_time.strftime('%H:%M:%S'))
-            time1= x.song_duration
-            sec+= get_sec(time1)
-            estimated_time=current_time+timedelta(seconds=sec)
-            songs_play_times.append(estimated_time.strftime('%H:%M:%S'))
-        elements={
-            "songs": zip(songs,songs_play_times),
-        }
-        return render(request, 'request_song.html', elements)
+        return render(request, 'request_song.html', {"songs":song.objects.all()})
     except: 
         return render(request, 'request_song.html')
 
@@ -144,17 +138,7 @@ def request_song(request):
 def dashboard(request):
     try:
         songs= song.objects.all()
-        current_time = datetime.now()
-        sec=0
-        songs_play_times=[]
-        for x in songs:
-            if x==songs[0]:
-                songs_play_times.append(current_time.strftime('%H:%M:%S'))
-            time1= x.song_duration
-            sec+= get_sec(time1)
-            estimated_time=current_time+timedelta(seconds=sec)
-            songs_play_times.append(estimated_time.strftime('%H:%M:%S'))
-        dict={"songs":zip(songs,songs_play_times),
+        dict={"songs":songs,
             "current_song_url": video_id(songs[0].song_url),
             "current_song_title": songs[0].song_title,
             "current_song_id": songs[0].id,
@@ -173,10 +157,7 @@ def songs_blacklist_page(request):
 @user_passes_test(lambda u: u.groups.filter(name='Moderation').exists())
 def songs_history(request):
     try:
-        songs= songs_play_history.objects.all()
-        dict={"songs":songs,
-        }
-        return render(request, 'history.html', dict)
+        return render(request, 'history.html', {"songs":songs_play_history.objects.all()})
     except:
         return render(request, 'history.html')
 
@@ -213,7 +194,6 @@ def change_password(request):
 @user_passes_test(lambda u: u.groups.filter(name='Moderation').exists())
 def next_song(request):
     try:
-        skip_votes=db["skip_votes"]
         songs= song.objects.all()
         Song=songs_play_history()
         Song.song_url = songs[0].song_url
@@ -222,11 +202,7 @@ def next_song(request):
         Song.song_thumbnail = songs[0].song_thumbnail
         Song.save()
         songs[0].delete()
-        skip_votes.delete_many({})
-        current_song=songs[0]
-        response={"current_song":{"title":current_song.song_title,
-                                  "url":current_song.song_url,
-                                  "id":current_song.id}}
+        skip_votes.clear()
         return redirect(reverse("songrequestapp:dashboard"))
     except IndexError:
         return render(request, 'dashboard.html')
@@ -282,11 +258,9 @@ def remove_from_blacklist(request, id):
 @login_required(login_url='/accounts/login/')
 def skip_vote(request, id): 
     if request.method == "POST":
-        skip_votes=db["skip_votes"]
-        if skip_votes.find_one({"username": request.user.username}) != None:
+        if str(request.user.username) in skip_votes:
             return JsonResponse({"message":"ALREADY VOTED"})
-        user={"username": request.user.username}
-        # skip_votes.insert_one(user)
+        skip_votes.append(request.user.username)
         Song = get_object_or_404(song, id=id)
         Song.skip_requests +=1
         Song.save()
@@ -302,17 +276,16 @@ def skip_vote(request, id):
         songs = song.objects.all()
         return JsonResponse({"message": songs[0].skip_requests})
     
-    
+@ratelimit(key='user_or_ip', method=ratelimit.ALL, rate='2/10m')
 def bug_report(request):
     if request.method=="POST":
         try:
-            bugs=db["bug_reports"]
-            user="UNDEFINED"
+            report = bug_reportt()
+            report.description=request.POST["description"]
+            report.reported_by="UNDEFINED"
             if request.user.is_authenticated:
-                user= request.user.email
-            bug={"user_email": user,
-                "description":request.POST["description"]}
-            bugs.insert_one(bug)
+                report.reported_by=request.user.email
+            report.save()
             return JsonResponse({"message":"BUG REPORTED. THANKS!"})
         except:
             return JsonResponse({"message":"SOMETHING GONE WRONG. PLEASE TRY AGAIN."})

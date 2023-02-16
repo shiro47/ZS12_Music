@@ -78,7 +78,7 @@
             </button>
         </div>
         <div class="list-group" id="songs_queue">
-            {% for s,t in songs %}
+            {% for s in songs %}
             
                 {% if forloop.first %}
                 {% else %}
@@ -90,7 +90,6 @@
                     <small>{{ s.song_duration }}</small>
                 </div>
                 <p  class="mb-1">{{ s.song_url }}</p>
-                {% comment %} <small>Estimated start time: ≈{{ t }}</small> {% endcomment %}
                 </a>
                 <small style="">
                     <form id="delete_form_{{ s.id }}" style="display:inline-block;">
@@ -213,7 +212,7 @@ function submit_song_to_blacklist(id) {
     
             switch (data.type) {
                 case "new_song":
-                    var output= `<div class="list-item" id="song_${data.id}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;"><a href="${data.song_url}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action "><img src="${data.song_thumbnail}" style="width:120px;height:90px;"><div class="d-flex w-100 justify-content-between"><h5 class="mb-1">#${data.position}. ${data.song_title}</h5><small>${data.song_duration}</small></div><p  class="mb-1">${data.song_url}</p></a><small style=""><form style="display:inline-block;"><button type="button" onclick="submit_delete2(${data.id})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">DELETE</button></form><form style="display:inline-block;"><button type="button" onclick="submit_song_to_blacklist2(${data.id})" value="delete" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">ADD TO BLACKLIST</button></form></small></div>`;
+                    var output= `<div class="list-item" id="song_${data.id}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;"><a href="${data.song_url}" target="_blank" rel="noopener noreferrer" class="list-group-item list-group-item-action "><img src="${data.song_thumbnail}" style="width:120px;height:90px;"><div class="d-flex w-100 justify-content-between"><h5 class="mb-1">#${data.position}. ${data.song_title}</h5><small>${data.song_duration}</small></div><p  class="mb-1">${data.song_url}</p></a><small style=""><form style="display:inline-block;"><button type="button" onclick="submit_delete(${data.id})" value="delete" class="btn" style="padding: 10px 30px;  margin: 10px;">DELETE</button></form><form style="display:inline-block;"><button type="button" onclick="submit_song_to_blacklist(${data.id})" value="delete" class="btn" style="padding: 10px 30px; margin: 10px; margin-left: 40px;  ">ADD TO BLACKLIST</button></form></small></div>`;
                     $("#songs_queue").append(output).fadeIn("slow");
                     break;
                 case "skip_vote":

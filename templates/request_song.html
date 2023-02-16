@@ -74,7 +74,7 @@
     <div class="modal__content gradient-border">
         <h1 style="color: #fff">Songs queue</h1>
         <div class="list-group">
-            {% for s,t in songs %}
+            {% for s in songs %}
             
                 {% if forloop.first %}
                 <div class="list-item" id="song_{{s.id}}" style="border: 10px solid; border-image-slice: 1; border-width: 5px; border-image-source: linear-gradient(to left, #743ad5, #d53a9d); background: #212529;">
@@ -102,7 +102,6 @@
                     <h5 class="mb-1">#{{ forloop.counter }}. {{ s.song_title }}</h5>
                     <small style="margin: 3px">{{ s.song_duration }}</small>
                 </div>
-                {% comment %} <small>Estimated start time: ≈{{ t }}</small> {% endcomment %}
                 </a>
                 
             </div>
