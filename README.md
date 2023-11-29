@@ -57,6 +57,21 @@ https://zs-song-request.herokuapp.com/admin
 
 - Configuration File for Limiting the Number of Songs Users can Add within a Specific Time Period: This feature enables the customization of the number of songs that users can add to the queue within a particular time frame. With the use of a configuration file, the administrator can easily adjust this limit to fit their preferences and requirements. This provides better control over the song request process and ensures a fair and enjoyable experience for all users.
 
+## Screenshots
+
+- Dashboard
+![Dashboard](screenshots/song-request-dashboard.png)
+- Request song
+![Request song](screenshots/song-request-request.png)
+- Songs queue
+![Songs queue](screenshots/song-request-queue.png)
+- Songs blacklist
+![Songs blacklist](screenshots/song-request-blacklist.png)
+- Songs history
+![Songs history](screenshots/song-request-history.png)
+- Profile panel
+![Profile panel](screenshots/song-request-profile.png)
+
 
 ## Badges
 
